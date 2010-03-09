@@ -5,6 +5,8 @@ require 'dm-validations'
 require 'dm-aggregates'
 require 'haml'
 require 'ostruct'
+require 'digest/sha1'
+require 'ruby-debug'
 
 require 'sinatra' unless defined?(Sinatra)
 
@@ -19,5 +21,7 @@ configure do
 
   # load models
   $LOAD_PATH.unshift("#{File.dirname(__FILE__)}/lib")
-  Dir.glob("#{File.dirname(__FILE__)}/lib/*.rb") { |lib| require File.basename(lib, '.*') }
+  $LOAD_PATH.unshift("#{File.dirname(__FILE__)}/models")
+  Dir.glob("#{File.dirname(__FILE__)}/lib/*.rb") { |lib|   require File.basename(lib, '.*') }
+  Dir.glob("#{File.dirname(__FILE__)}/models/*.rb") { |model| require File.basename(model, '.*') }
 end
