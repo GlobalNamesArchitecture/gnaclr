@@ -1,4 +1,5 @@
 require "#{File.dirname(__FILE__)}/spec_helper"
+require 'rest_client'
 
 describe 'main application' do
   include Rack::Test::Methods
@@ -11,8 +12,10 @@ describe 'main application' do
     get '/'
     last_response.should be_ok
   end
-
-  specify 'should have more specs' do
-    pending
+  
+  it 'should save classification file' do
+    post('/classifications', :multipart => true, :file => File.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data.tar.gz')).read, :agent => 'agent1', :name => 'test', :uuid => UUID.create_v4.guid)
+    last_response.should be_ok
   end
+
 end

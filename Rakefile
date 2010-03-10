@@ -15,7 +15,7 @@ end
 
 namespace :db do
   desc 'Auto-migrate the database (destroys data)'
-  task :migrate => :environment do
+  task :migrate => [:environment, "git:reset"] do
     DataMapper.auto_migrate!
   end
 
@@ -29,11 +29,32 @@ namespace :gems do
   desc 'Install required gems'
   task :install do
     required_gems = %w{ sinatra rspec rack-test dm-core dm-validations
-                        dm-aggregates dm-timestamps haml rest-client git data_objects }
+                        dm-aggregates dm-timestamps dm-pager haml rest-client grit data_objects }
     required_gems.each { |required_gem| system "sudo gem install #{required_gem}" }
   end
 end
 
 task :environment do
   require 'environment'
+end
+
+namespace :git do
+  desc 'Initialize git repository'
+  task :init => [:environment] do
+    require 'ruby-debug'
+    mkdir "files" unless FileTest.exists? "files"
+    unless FileTest.exists? "files/.gni"
+      Dir.chdir(File.join(File.dirname(__FILE__), "files"))
+      `git init`
+    end
+    puts "Initializing git repository"  
+  end
+  desc 'Cleaning up git repository'
+  task :destroy do
+    puts "Removing git repository"
+    FileUtils::rm_rf "files" if FileTest.exists? "files"
+  end
+  task :reset => [:destroy, :init] do
+    puts "Resetting git repository"
+  end
 end

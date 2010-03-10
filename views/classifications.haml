@@ -1,0 +1,13 @@
+%h1 Classifications
+= @classifications.pager.to_html('/classifications')
+%table
+  %tr
+    %th Name
+    %th Author
+    %th Updated
+  - @classifications.each do |c|
+    %tr
+      %td= c.name
+      %td= c.agent.name
+      %td= c.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+  

@@ -36,3 +36,26 @@ post '/keys' do
   key = Key.create!(:domain => params[:domain], :salt => Key.gen_salt)
   redirect "/keys/#{key.id}"
 end
+
+get '/classifications' do
+  sort_by = params[:sort]
+  page = params[:page] ? params[:page] : 1
+  @classifications = Classification.page(page, :order => :updated_at.desc)
+  haml :classifications
+end
+
+post '/classifications' do
+  name = params[:name]
+  uuid = params[:uuid]
+  agent_name = params[:agent]
+  agent = Agent.first(:name => agent_name)
+  agent = Agent.create!(:name => agent_name) unless agent
+  classification = Classification.first(:uuid => uuid)
+  debugger
+  classification = Classification.new(:name => name, :agent => agent, :uuid => uuid, :created_at => Time.now, :updated_at => Time.now) unless classification
+  classification.save
+  file = open(File.join(SiteConfig.root_path, 'files', classification.uuid), 'w')
+  file.write(params[:file])
+  file.close
+  redirect '/classifications'
+end
