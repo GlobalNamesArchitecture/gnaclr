@@ -9,6 +9,4 @@ class Classification
   belongs_to :agent
 
   validates_present :name
-  validates_present :author_name
-  name
 end

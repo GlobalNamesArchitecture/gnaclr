@@ -51,8 +51,7 @@ post '/classifications' do
   agent = Agent.first(:name => agent_name)
   agent = Agent.create!(:name => agent_name) unless agent
   classification = Classification.first(:uuid => uuid)
-  debugger
-  classification = Classification.new(:name => name, :agent => agent, :uuid => uuid, :created_at => Time.now, :updated_at => Time.now) unless classification
+  classification = Classification.new(:name => name, :agent => agent, :uuid => uuid) unless classification
   classification.save
   file = open(File.join(SiteConfig.root_path, 'files', classification.uuid), 'w')
   file.write(params[:file])
