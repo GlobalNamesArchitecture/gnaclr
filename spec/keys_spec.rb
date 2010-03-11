@@ -9,7 +9,7 @@ describe Key do
     @key.should be_valid
   end
 
-  id 'should require a domain' do
+  it 'should require a domain' do
     key = Key.new
     key.should_not be_valid
     key.errors[:domain].should_not be_nil

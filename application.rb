@@ -44,6 +44,10 @@ get '/classifications' do
   haml :classifications
 end
 
+get '/classifications/new' do
+  haml :classifications_new
+end
+
 post '/classifications' do
   name = params[:name]
   uuid = params[:uuid]
