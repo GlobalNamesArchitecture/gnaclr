@@ -13,12 +13,19 @@ error do
 end
 
 helpers do
-  # add your helpers here
+  def classificaton_file(classification)
+    "/files/#{classification.uuid}/#{classification.file_name}"
+  end
+end
+
+get '/main.css' do
+  content_type 'text/css', :charset => 'utf-8'
+  sass :main
 end
 
 # root page
 get '/' do
-  haml :root
+  redirect "/classifications"
 end
 
 # key pages
@@ -27,7 +34,6 @@ get '/keys' do
 end
 
 get '/keys/:id' do
-  debugger
   @key = Key.first(:id => params[:id])
   haml :keys_show
 end
@@ -56,8 +62,13 @@ post '/classifications' do
   agent = Agent.create!(:name => agent_name) unless agent
   classification = Classification.first(:uuid => uuid)
   classification = Classification.new(:name => name, :agent => agent, :uuid => uuid) unless classification
+  path = File.join(SiteConfig.root_path, 'public', 'files', classification.uuid)
+  FileUtils.mkdir(path) unless FileTest.exists?(path)
+  FileUtils.rm(path) if classification.file_name && FileTest.exists?(File.join(path, classification.file_name))
+  classification.file_name = params[:file][:filename]
+  classification.file_type = params[:file][:type]
   classification.save
-  file = open(File.join(SiteConfig.root_path, 'files', classification.uuid), 'w')
+  file = open(File.join(path, classification.file_name), 'w')
   file.write(params[:file])
   file.close
   redirect '/classifications'

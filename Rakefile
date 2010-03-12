@@ -42,9 +42,9 @@ namespace :git do
   desc 'Initialize git repository'
   task :init => [:environment] do
     require 'ruby-debug'
-    mkdir "files" unless FileTest.exists? "files"
-    unless FileTest.exists? "files/.gni"
-      Dir.chdir(File.join(File.dirname(__FILE__), "files"))
+    mkdir "public/files" unless FileTest.exists? "public/files"
+    unless FileTest.exists? "public/files/.gni"
+      Dir.chdir(File.join(File.dirname(__FILE__), "public", "files"))
       `git init`
     end
     puts "Initializing git repository"  
@@ -52,7 +52,7 @@ namespace :git do
   desc 'Cleaning up git repository'
   task :destroy do
     puts "Removing git repository"
-    FileUtils::rm_rf "files" if FileTest.exists? "files"
+    FileUtils::rm_rf "public/files" if FileTest.exists? "public/files"
   end
   task :reset => [:destroy, :init] do
     puts "Resetting git repository"

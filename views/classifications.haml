@@ -7,7 +7,8 @@
     %th Updated
   - @classifications.each do |c|
     %tr
-      %td= c.name
+      %td
+        %a{ :href => classificaton_file(c) }= c.name
       %td= c.agent.name
       %td= c.updated_at.strftime('%Y-%m-%d %H:%M:%S')
   
