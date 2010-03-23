@@ -25,7 +25,6 @@ end
 
 # root page
 get '/' do
-  debugger
   redirect "/classifications"
 end
 
