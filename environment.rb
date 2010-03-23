@@ -22,7 +22,7 @@ configure do
                )
 
   DataMapper.setup(:default, "sqlite3:///#{File.expand_path(File.dirname(__FILE__))}/#{Sinatra::Base.environment}.db")
-
+  #DataMapper.setup(:default, 'mysql://root:@localhost/gnaclr') 
   # load models
   $LOAD_PATH.unshift("#{File.dirname(__FILE__)}/lib")
   $LOAD_PATH.unshift("#{File.dirname(__FILE__)}/models")
