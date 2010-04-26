@@ -14,7 +14,7 @@ describe 'main application' do
   end
   
   it 'should save classification file' do
-    post('/classifications', :multipart => true, :file => File.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data.tar.gz')).read, :agent => 'agent1', :name => 'test', :uuid => UUID.create_v4.guid)
+    post('/classifications', :multipart => true, :file => File.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data.tar.gz')).read, :agent => 'agent1', :name => 'test', :uuid => UUID.create_v5("one.example.com", UUID::NameSpace_DNS).guid)
     last_response.should be_redirect
   end
 

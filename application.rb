@@ -63,9 +63,10 @@ post '/classifications' do
   classification = Classification.first(:uuid => uuid)
   classification = Classification.new(:name => name, :agent => agent, :uuid => uuid) unless classification
   path = File.join(SiteConfig.root_path, 'public', 'files', classification.uuid)
+  debugger
   unless FileTest.exists?(path)
     FileUtils.mkdir(path)
-    `cd #{path}`
+    Dir.chdir(path)
     `git init`
   end
   FileUtils.rm(path) if classification.file_name && FileTest.exists?(File.join(path, classification.file_name))
