@@ -15,7 +15,7 @@ end
 
 namespace :db do
   desc 'Auto-migrate the database (destroys data)'
-  task :migrate => [:environment, "git:reset"] do
+  task :migrate => :environment do
     DataMapper.auto_migrate!
   end
 
@@ -36,25 +36,4 @@ end
 
 task :environment do
   require 'environment'
-end
-
-namespace :git do
-  desc 'Initialize git repository'
-  task :init => [:environment] do
-    require 'ruby-debug'
-    mkdir "public/files" unless FileTest.exists? "public/files"
-    unless FileTest.exists? "public/files/.gni"
-      Dir.chdir(File.join(File.dirname(__FILE__), "public", "files"))
-      `git init`
-    end
-    puts "Initializing git repository"  
-  end
-  desc 'Cleaning up git repository'
-  task :destroy do
-    puts "Removing git repository"
-    FileUtils::rm_rf "public/files" if FileTest.exists? "public/files"
-  end
-  task :reset => [:destroy, :init] do
-    puts "Resetting git repository"
-  end
 end

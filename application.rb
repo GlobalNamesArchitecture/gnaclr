@@ -63,7 +63,11 @@ post '/classifications' do
   classification = Classification.first(:uuid => uuid)
   classification = Classification.new(:name => name, :agent => agent, :uuid => uuid) unless classification
   path = File.join(SiteConfig.root_path, 'public', 'files', classification.uuid)
-  FileUtils.mkdir(path) unless FileTest.exists?(path)
+  unless FileTest.exists?(path)
+    FileUtils.mkdir(path)
+    `cd #{path}`
+    `git init`
+  end
   FileUtils.rm(path) if classification.file_name && FileTest.exists?(File.join(path, classification.file_name))
   classification.file_name = params[:file][:filename]
   classification.file_type = params[:file][:type]
@@ -71,6 +75,8 @@ post '/classifications' do
   file = open(File.join(path, classification.file_name), 'w')
   file.write(params[:file])
   file.close
-  debugger
+  `git add .`
+  `git add -u`
+  `git commit -m "#{Time.now.strftime('%Y-%m-%d at %I:%M:%S %p')}"`
   redirect '/classifications'
 end
