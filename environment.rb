@@ -11,6 +11,7 @@ require 'digest/sha1'
 require 'ruby-debug'
 require 'grit'
 require 'yaml'
+require 'dwc-archive'
 
 require 'sinatra' unless defined?(Sinatra)
 

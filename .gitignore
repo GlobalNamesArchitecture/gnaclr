@@ -3,4 +3,6 @@ public/files/*
 files/*
 *.swp
 *.swo
+*~
 *.db
+*.log

@@ -71,5 +71,6 @@ post '/classifications' do
   file = open(File.join(path, classification.file_name), 'w')
   file.write(params[:file])
   file.close
+  debugger
   redirect '/classifications'
 end
