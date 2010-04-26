@@ -5,10 +5,14 @@
     %th Name
     %th Author
     %th Updated
+    %th History
   - @classifications.each do |c|
     %tr
       %td
         %a{ :href => classificaton_file(c) }= c.name
       %td= c.agent.name
       %td= c.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+      %td
+        %a{ :href => "/history/#{c.id}" }
+          history
   

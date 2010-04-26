@@ -28,21 +28,6 @@ get '/' do
   redirect "/classifications"
 end
 
-# key pages
-get '/keys' do
-  haml :keys
-end
-
-get '/keys/:id' do
-  @key = Key.first(:id => params[:id])
-  haml :keys_show
-end
-
-post '/keys' do 
-  key = Key.create!(:domain => params[:domain], :salt => Key.gen_salt)
-  redirect "/keys/#{key.id}"
-end
-
 get '/classifications' do
   sort_by = params[:sort]
   page = params[:page] ? params[:page] : 1
@@ -62,22 +47,34 @@ post '/classifications' do
   agent = Agent.create!(:name => agent_name) unless agent
   classification = Classification.first(:uuid => uuid)
   classification = Classification.new(:name => name, :agent => agent, :uuid => uuid) unless classification
-  path = File.join(SiteConfig.root_path, 'public', 'files', classification.uuid)
-  debugger
+  path = File.join(SiteConfig.files_path, classification.uuid)
   unless FileTest.exists?(path)
     FileUtils.mkdir(path)
     Dir.chdir(path)
     `git init`
   end
-  FileUtils.rm(path) if classification.file_name && FileTest.exists?(File.join(path, classification.file_name))
+  Dir.chdir(path)
+  Dir.entries(Dir.pwd).each do |e|
+    File.delete(e) if File.file?(e)
+  end
   classification.file_name = params[:file][:filename]
   classification.file_type = params[:file][:type]
   classification.save
   file = open(File.join(path, classification.file_name), 'w')
-  file.write(params[:file])
+  file.write(params[:file][:tempfile].read(65536))
   file.close
+  Dir.chdir(path)
   `git add .`
   `git add -u`
   `git commit -m "#{Time.now.strftime('%Y-%m-%d at %I:%M:%S %p')}"`
+  Dir.chdir(SiteConfig.root_path)
   redirect '/classifications'
+end
+
+get "/history/:classification_id" do
+  @classification_id = params[:classification_id]
+  classification = Classification.first(@classification_id)
+  @repository = Grit::Repo.new(File.join(SiteConfig.files_path, classification.uuid))
+  @commits = @repository 
+  haml :history
 end

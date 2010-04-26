@@ -3,6 +3,13 @@ require 'rest_client'
 
 describe 'main application' do
   include Rack::Test::Methods
+  before(:all) do
+    @uuid = UUID.create_v5("one.example.com", UUID::NameSpace_DNS).guid
+  end
+
+  # after(:all)
+  #   FileUtils.rm_rf File.join(SiteConfig.files_path, @uuid)  
+  # end
 
   def app
     Sinatra::Application.new
@@ -14,12 +21,12 @@ describe 'main application' do
   end
   
   it 'should save classification file keeping different versions' do
-    post('/classifications', :multipart => true, :file => File.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v1.tar.gz')).read, :agent => 'agent1', :name => 'test', :uuid => UUID.create_v5("one.example.com", UUID::NameSpace_DNS).guid)
+    post('/classifications', :multipart => true, :file => File.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v1.tar.gz')).read, :agent => 'agent1', :name => 'test', :uuid => @uuid)
     last_response.should be_redirect
   end
 
-  it 'blabla' do
-    post('/classifications', :multipart => true, :file => File.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v2.tar.gz')).read, :agent => 'agent1', :name => 'test', :uuid => UUID.create_v5("one.example.com", UUID::NameSpace_DNS).guid)
+  it 'should create a new version of the file' do
+    post('/classifications', :multipart => true, :file => File.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v2.tar.gz')).read, :agent => 'agent1', :name => 'test', :uuid => @uuid)
     last_response.should be_redirect
   end
 
