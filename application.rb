@@ -18,6 +18,13 @@ helpers do
   end
 end
 
+def get_repo(params)
+  classification_id = params[:classification_id]
+  classification = Classification.first(@classification_id)
+  repository = Grit::Repo.new(File.join(SiteConfig.files_path, classification.uuid))
+  [classification_id, repository]
+end
+
 get '/main.css' do
   content_type 'text/css', :charset => 'utf-8'
   sass :main
@@ -72,9 +79,19 @@ post '/classifications' do
 end
 
 get "/history/:classification_id" do
-  @classification_id = params[:classification_id]
-  classification = Classification.first(@classification_id)
-  @repository = Grit::Repo.new(File.join(SiteConfig.files_path, classification.uuid))
-  @commits = @repository 
+  @classification_id, @repository = get_repo(params)
+  @commits = @repository.commits.map { |c| { :message => c.message, :tree_id => c.tree.id, :file_name => c.tree.blobs.first.name } }
   haml :history
+end
+
+get "/classification_file/:classification_id/:tree_id" do
+  @classification_id, @repository = get_repo(params)
+  require 'ruby-debug'
+  blob = @repository.tree(params[:tree_id]).blobs.first
+  type, size, file_name = [blob.mime_type, blob.size, blob.name]
+  headers(
+    'Content-Type'        => type,
+    'Content-length'      => size,
+    'Content-Disposition' => "attachment; filename=#{file_name}")
+  blob.data
 end

@@ -19,3 +19,4 @@ Spec::Runner.configure do |config|
   # reset database before each example is run
   config.before(:each) { DataMapper.auto_migrate! }
 end
+

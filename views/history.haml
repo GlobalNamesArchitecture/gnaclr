@@ -1,1 +1,14 @@
-%p== hi #{@classification_id}
+%table
+  %thead
+    %tr
+      %th #
+      %th File
+      %th Message
+  %tbody
+    - @commits.each_with_index do |c, i|
+      %tr
+        %td= i
+        %td
+          %a{ :href => "/classification_file/#{@classification_id}/#{c[:tree_id]}" }
+            = c[:file_name]
+        %td= c[:message]

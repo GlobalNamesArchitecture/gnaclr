@@ -21,13 +21,16 @@ describe 'main application' do
   end
   
   it 'should save classification file keeping different versions' do
-    post('/classifications', :multipart => true, :file => File.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v1.tar.gz')).read, :agent => 'agent1', :name => 'test', :uuid => @uuid)
-    last_response.should be_redirect
+    post('/classifications', :file => Rack::Test::UploadedFile.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v1.tar.gz'), 'applicaation/gzip'), :agent => 'agent1', :name => 'test', :uuid => @uuid)
+    follow_redirect!
+    last_response.body.should include('test')
   end
 
   it 'should create a new version of the file' do
-    post('/classifications', :multipart => true, :file => File.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v2.tar.gz')).read, :agent => 'agent1', :name => 'test', :uuid => @uuid)
-    last_response.should be_redirect
+    post('/classifications', :file => Rack::Test::UploadedFile.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v2.tar.gz'), 'applicaation/gzip'), :agent => 'agent1', :name => 'new name', :uuid => @uuid)
+    follow_redirect!
+    last_response.body.should_not include('test')
+    last_response.body.should include('new name')
   end
 
 end
