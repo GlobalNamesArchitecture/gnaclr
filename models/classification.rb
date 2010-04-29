@@ -1,19 +1,10 @@
 class Classification
   include DataMapper::Resource
-  property :id,          Serial
-  property :uuid,        String, :unique_index => true
-  property :name,        String
-  property :description, String
-  property :file_name,   String
-  property :file_type,   String
-  property :url,         String
-  property :created_at,  DateTime
-  property :updated_at,  DateTime
-  
-  belongs_to :agent
-  has n, :authors, :through => Resource
+  property :id,           Serial
+  property :uuid,         String, :unique_index => true, :required => true, :format => /([0-9a-f]){8}-([0-9a-f]){4}-([0-9a-f]){4}-([0-9a-f]){4}-([0-9a-f]){12}/
+  property :current_hash, String, :unique_index => true
+  property :created_at,   DateTime
+  property :updated_at,   DateTime
 
-  validates_present :name
-  validates_present :file_name
-  validates_present :file_type
+  has n, :revisions
 end

@@ -25,6 +25,15 @@ def get_repo(params)
   [classification_id, repository]
 end
 
+def darwin_core_archive(file)
+  begin
+    m = DarwinCore.new(file).metadata
+    return m.data ? { :title => m.title, :description => m.description, :authors => m.authors, :url => m.url } : {}
+  rescue DarwinCore::Error
+    return 
+  end
+end
+
 get '/main.css' do
   content_type 'text/css', :charset => 'utf-8'
   sass :main
