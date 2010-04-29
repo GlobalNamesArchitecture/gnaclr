@@ -7,4 +7,9 @@ class Classification
   property :updated_at,   DateTime
 
   has n, :revisions
+  
+  def initialize 
+    super
+  end
+
 end

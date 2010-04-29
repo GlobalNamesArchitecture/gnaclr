@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'sinatra'
+#require 'sinatra/respond_to'
 require 'environment'
 
 configure do
@@ -58,9 +59,6 @@ end
 post '/classifications' do
   name = params[:name]
   uuid = params[:uuid]
-  agent_name = params[:agent]
-  agent = Agent.first(:name => agent_name)
-  agent = Agent.create!(:name => agent_name) unless agent
   classification = Classification.first(:uuid => uuid)
   classification = Classification.new(:name => name, :agent => agent, :uuid => uuid) unless classification
   path = File.join(SiteConfig.files_path, classification.uuid)
