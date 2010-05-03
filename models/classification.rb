@@ -8,8 +8,18 @@ class Classification
 
   has n, :revisions
   
-  def initialize 
-    super
+  def new(uuid, file)
+    super({:uuid => uuid, :current_hash => nil})
+  end
+
+  def self.delete_data_path(uuid)
+    data_path = self.data_path(uuid)
+    FileUtils.rm_rf(data_path) if File.exists?(data_path) 
+  end
+
+  private 
+  def self.data_path(uuid)
+    File.join(SiteConfig.files_path, uuid)
   end
 
 end
