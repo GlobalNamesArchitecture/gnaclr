@@ -48,7 +48,9 @@ end
 get '/classifications' do
   sort_by = params[:sort]
   page = params[:page] ? params[:page] : 1
-  @classifications = Classification.page(page, :order => :updated_at.desc)
+  @classifications = Classification.page(page, :order => :updated_at.desc).map do |c|
+    Revision.first(c.revision_hash)
+  end
   haml :classifications
 end
 
@@ -57,31 +59,33 @@ get '/classifications/new' do
 end
 
 post '/classifications' do
-  name = params[:name]
   uuid = params[:uuid]
-  classification = Classification.first(:uuid => uuid)
-  classification = Classification.new(:name => name, :agent => agent, :uuid => uuid) unless classification
-  path = File.join(SiteConfig.files_path, classification.uuid)
-  unless FileTest.exists?(path)
-    FileUtils.mkdir(path)
-    Dir.chdir(path)
-    `git init`
-  end
-  Dir.chdir(path)
-  Dir.entries(Dir.pwd).each do |e|
-    File.delete(e) if File.file?(e)
-  end
-  classification.file_name = params[:file][:filename]
-  classification.file_type = params[:file][:type]
+  debugger
+  dwca = DWCA.new(uuid, params[:file], SiteConfig.files_path, SiteConfig.root_path)
+  data = dwca.process_file
+  
+  classification = Classification.first(:uuid => uuid) || Classification.new(:uuid => uuid)
+  classification.save unless classification.id
+  citation = Citation.first(:citation => data[:citation]) || Citation.new(:citation => data[:citation])
+  citation.save unless citation.id
+  authors = []
+  data[:authors].each do |a|
+    author = Author.first(a) || Author.new(a)
+    author.save
+    authors << author
+  end if data[:authors]
+  revision = Revision.new(:classification => classification,
+               :citation => citation,
+               :revision_hash => data[:revision_hash], 
+               :file_name => data[:file_name], 
+               :title => data[:title],
+               :description => data[:description],
+               :url => data[:url])
+
+  revision.save
+  authors.each { |a| ar = AuthorRevision.new(:author => a, :revision => revision); ar.save }
+  classification.revision_hash = revision.revision_hash
   classification.save
-  file = open(File.join(path, classification.file_name), 'w')
-  file.write(params[:file][:tempfile].read(65536))
-  file.close
-  Dir.chdir(path)
-  `git add .`
-  `git add -u`
-  `git commit -m "#{Time.now.strftime('%Y-%m-%d at %I:%M:%S %p')}"`
-  Dir.chdir(SiteConfig.root_path)
   redirect '/classifications'
 end
 

@@ -6,10 +6,10 @@ describe Classification do
       @uuid = UUID1
     end
 
-    it "should generate new classification" do
-      file1 = FILE1_1
-      c = Classification.new(@uuid, file1)
-      c.uuid.should == @uuid
-    end
+    # it "should generate new classification" do
+    #   file1 = FILE1_1
+    #   c = Classification.new(@uuid, file1)
+    #   c.uuid.should == @uuid
+    # end
   end
 end

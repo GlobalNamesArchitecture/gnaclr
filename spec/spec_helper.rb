@@ -27,7 +27,7 @@ Spec::Runner.configure do |config|
   # reset database before each example is run
   config.before(:each) do 
     DataMapper.auto_migrate!
-    Classification.delete_data_path(UUID1)
+    DWCA.delete_repo_path(File.join(SiteConfig.files_path, UUID1))
   end
 end
 

@@ -35,6 +35,10 @@ class UUID
 	private_class_method :new
 
 	class << self
+      def valid?(input)
+         !!(input.class == String && input.match(/([0-9a-f]){8}-([0-9a-f]){4}-([0-9a-f]){4}-([0-9a-f]){4}-([0-9a-f]){12}/))
+      end
+
 		def mask19 v, str # :nodoc
 			nstr = str.bytes.to_a
 			version = [0, 16, 32, 48, 64, 80][v]
