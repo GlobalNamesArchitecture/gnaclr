@@ -9,7 +9,8 @@ class Classification
   property :created_at,   DateTime
   property :updated_at,   DateTime
   property :citation,     Text
-
-  has n, :authors, :through => :author_classification
+  
+  has n, :author_classifications
+  has n, :authors, :through => :author_classifications
 
 end

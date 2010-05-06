@@ -27,8 +27,15 @@ def get_repo(params)
 end
 
 def search_for(search_term, page, per_page)
+  return [] if search_term.strip == ''
   offset = (page - 1) * per_page
-  repository(:default).adapter.select("select * from classifications where title rlike ? or description like ? or citation like ? limit ?, ?", search_term, search_term, search_term, offset, per_page )
+  search_term = '[[:<:]]' + search_term
+  res = repository(:default).adapter.select("select distinct c.*, '' as authors from classifications c join author_classifications ac on c.id = ac.classification_id join authors a on a.id = ac.author_id  where c.title rlike ? or a.first_name rlike ? or a.last_name rlike ? limit ?, ?", search_term, search_term, search_term, offset, per_page )
+  res.each do |c|
+    authors = repository(:default).adapter.select("select a.first_name, a.last_name from authors a join author_classifications ac on ac.author_id = a.id where ac.classification_id = ?", c.id)
+    c.authors = authors
+  end
+  res
 end
 
 def darwin_core_archive(file)
@@ -52,9 +59,9 @@ end
 
 get '/classifications' do
   sort_by = params[:sort]
-  page = params[:page] || 1
-  per_page = params[:per_page] || 10
-  @classifications = Classification.all(:order => :updated_at.desc, :limit => per_page, :offset => (page - 1) * per_page)
+  page = params[:page].to_i || 1
+  per_page = params[:per_page].to_i || 10
+  @classifications = Classification.all(:order => :updated_at.desc, :limit => per_page.to_s, :offset => ((page - 1) * per_page).to_s)
   haml :classifications
 end
 

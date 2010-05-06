@@ -7,5 +7,6 @@ class Author
   property :created_at, DateTime
   property :updated_at, DateTime
   
-  has n, :classifications, :through => :author_classification
+  has n, :author_classifications
+  has n, :classifications, :through => :author_classifications
 end

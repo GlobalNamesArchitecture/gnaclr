@@ -52,10 +52,13 @@ class DWCA
 
   def obtain_metadata
     begin
-      metadata = DarwinCore.new(@dwca_path).metadata
+      dc = DarwinCore.new(@dwca_path)
+      metadata = dc.metadata
       @data = {:title => metadata.title, :description => metadata.abstract, :url => metadata.url, :citation => metadata.citation, :authors => metadata.authors, :revision_hash => @repo.commits[0].id, :file_name => @file[:filename]}
+      dc.archive.clean
     rescue DarwinCore::Error => e
       DWCA.delete_repo_path if @repo.commits.empty?
+      DarwinCore.clean_all
       raise e
     end
     @data

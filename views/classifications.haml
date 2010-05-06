@@ -4,6 +4,7 @@
 %table
   %tr
     %th Title
+    %th Authors
     %th Description
     %th Updated
     %th History
@@ -11,6 +12,7 @@
     %tr
       %td
         %a{ :href => classificaton_file(c) }= c.title
+      %td= c.authors.map {|a| a.first_name + " " + a.last_name}.join(", ")
       %td= c.description
       %td= c.updated_at.strftime('%Y-%m-%d %H:%M:%S')
       %td
