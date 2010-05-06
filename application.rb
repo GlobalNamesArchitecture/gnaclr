@@ -59,9 +59,9 @@ end
 
 get '/classifications' do
   sort_by = params[:sort]
-  page = params[:page].to_i || 1
-  per_page = params[:per_page].to_i || 10
-  @classifications = Classification.all(:order => :updated_at.desc, :limit => per_page.to_s, :offset => ((page - 1) * per_page).to_s)
+  page = params[:page] || 1
+  per_page = params[:per_page] || 10
+  @classifications = Classification.all(:order => :updated_at.desc, :limit => per_page.to_i, :offset => ((page.to_i - 1) * per_page.to_i))
   haml :classifications
 end
 
