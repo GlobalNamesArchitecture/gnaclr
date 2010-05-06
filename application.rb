@@ -21,9 +21,14 @@ end
 
 def get_repo(params)
   classification_id = params[:classification_id]
-  classification = Classification.first(@classification_id)
+  classification = Classification.first(:id => classification_id)
   repository = Grit::Repo.new(File.join(SiteConfig.files_path, classification.uuid))
   [classification_id, repository]
+end
+
+def search_for(search_term, page, per_page)
+  offset = (page - 1) * per_page
+  repository(:default).adapter.select("select * from classifications where title rlike ? or description like ? or citation like ? limit ?, ?", search_term, search_term, search_term, offset, per_page )
 end
 
 def darwin_core_archive(file)
@@ -47,10 +52,9 @@ end
 
 get '/classifications' do
   sort_by = params[:sort]
-  page = params[:page] ? params[:page] : 1
-  @classifications = Classification.page(page, :order => :updated_at.desc).map do |c|
-    Revision.first(c.revision_hash)
-  end
+  page = params[:page] || 1
+  per_page = params[:per_page] || 10
+  @classifications = Classification.all(:order => :updated_at.desc, :limit => per_page, :offset => (page - 1) * per_page)
   haml :classifications
 end
 
@@ -60,33 +64,33 @@ end
 
 post '/classifications' do
   uuid = params[:uuid]
-  debugger
   dwca = DWCA.new(uuid, params[:file], SiteConfig.files_path, SiteConfig.root_path)
   data = dwca.process_file
-  
   classification = Classification.first(:uuid => uuid) || Classification.new(:uuid => uuid)
-  classification.save unless classification.id
-  citation = Citation.first(:citation => data[:citation]) || Citation.new(:citation => data[:citation])
-  citation.save unless citation.id
+  classification.attributes = {:citation => data[:citation], 
+                            :file_name => data[:file_name], 
+                            :title => data[:title], 
+                            :description => data[:description], 
+                            :url => data[:url]}
+  classification.save
+  
   authors = []
   data[:authors].each do |a|
     author = Author.first(a) || Author.new(a)
     author.save
     authors << author
   end if data[:authors]
-  revision = Revision.new(:classification => classification,
-               :citation => citation,
-               :revision_hash => data[:revision_hash], 
-               :file_name => data[:file_name], 
-               :title => data[:title],
-               :description => data[:description],
-               :url => data[:url])
 
-  revision.save
-  authors.each { |a| ar = AuthorRevision.new(:author => a, :revision => revision); ar.save }
-  classification.revision_hash = revision.revision_hash
-  classification.save
+  authors.each { |a| ar = AuthorClassification.new(:author => a, :classification => classification); ar.save }
   redirect '/classifications'
+end
+
+get '/search' do
+  page = params[:page] || 1
+  per_page = params[:per_page] || 30
+  @search_term = params[:search_term]
+  @classifications = search_for(@search_term, page, per_page)
+  haml :classifications
 end
 
 get "/history/:classification_id" do

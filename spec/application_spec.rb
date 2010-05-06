@@ -23,19 +23,11 @@ describe 'main application' do
     post('/classifications', :file => Rack::Test::UploadedFile.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v1.tar.gz'), 'applicaation/gzip'), :uuid => @uuid)
     follow_redirect!
     last_response.body.should include('Leptogastrinae')
+    last_response.body.should include('data_v1.tar.gz')
+    post('/classifications', :file => Rack::Test::UploadedFile.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v2.tar.gz'), 'applicaation/gzip'), :uuid => @uuid)
+    follow_redirect!
+    last_response.body.should include('Leptogastrinae')
+    last_response.body.should include('data_v2.tar.gz')
   end
-
-  # it 'should save classification file keeping different versions' do
-  #   post('/classifications', :file => Rack::Test::UploadedFile.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v1.tar.gz'), 'applicaation/gzip'), :uuid => @uuid)
-  #   follow_redirect!
-  #   last_response.body.should include('test')
-  # end
-
-  # it 'should create a new version of the file' do
-  #   post('/classifications', :file => Rack::Test::UploadedFile.new(File.join(SiteConfig.root_path, 'spec', 'files', 'data_v2.tar.gz'), 'applicaation/gzip'),:uuid => @uuid)
-  #   follow_redirect!
-  #   last_response.body.should_not include('test')
-  #   last_response.body.should include('new name')
-  # end
 
 end

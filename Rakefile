@@ -16,6 +16,7 @@ end
 namespace :db do
   desc 'Auto-migrate the database (destroys data)'
   task :migrate => :environment do
+    `rm -rf #{File.join(SiteConfig.files_path, "*")}`
     DataMapper.auto_migrate!
   end
 

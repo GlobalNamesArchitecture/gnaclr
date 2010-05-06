@@ -1,18 +1,19 @@
 %h1 Classifications
-= @classifications.pager.to_html('/classifications')
+- if @search_term
+  %h3== Searh term: '#{@search_term}'
 %table
   %tr
-    %th Name
-    %th Author
+    %th Title
+    %th Description
     %th Updated
     %th History
   - @classifications.each do |c|
     %tr
       %td
-        %a{ :href => classificaton_file(c) }= c.file_name
-      %td= c.agent.name
+        %a{ :href => classificaton_file(c) }= c.title
+      %td= c.description
       %td= c.updated_at.strftime('%Y-%m-%d %H:%M:%S')
       %td
         %a{ :href => "/history/#{c.id}" }
-          history
+          all revisions 
   

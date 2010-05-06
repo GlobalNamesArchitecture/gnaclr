@@ -1,3 +1,5 @@
+!blue = #095EAE
+
 body
   :background #FFF
   :color #1B1B1B
@@ -45,6 +47,7 @@ h2
 
 h3
   :font-size 1.4em
+  :color= !blue
 
 
 h4
@@ -66,7 +69,7 @@ p
 
 
 a
-  :color #095EAE
+  :color !blue
   :font-weight bold
   :text-decoration none
 
@@ -81,8 +84,11 @@ input
   :border 1px solid grey
   :padding 0.2em
 
-#logo a:hover
-  :text-decoration none
+#logo
+  span.title
+    :font-size 1.8em
+  a:hover
+    :text-decoration none
 
 .form_field
   :margin-bottom 0.5em

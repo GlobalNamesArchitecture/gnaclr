@@ -39,9 +39,9 @@ class DWCA
   def add_data
     create_repo_path
     Dir.chdir(@repo_path)
-    Dir.entries(Dir.pwd).each { |e| File.delete if File.file?(e) }
+    Dir.entries(Dir.pwd).each { |e| File.delete(e) if File.file?(e) }
     data_file = open(@dwca_path, 'w')
-    data_file.write(@file[:tempfile].read(65536))
+    data_file.write(@file[:tempfile].read)
     data_file.close
     Dir.chdir(@repo_path)
     `git add .`
