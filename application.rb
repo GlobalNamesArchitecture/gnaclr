@@ -15,14 +15,14 @@ end
 
 helpers do
   def classificaton_file(classification)
-    "/files/#{classification.uuid}/#{classification.file_name}"
+    "/files/#{classification.uuid_hash}/#{classification.file_name}"
   end
 end
 
 def get_repo(params)
   classification_id = params[:classification_id]
   classification = Classification.first(:id => classification_id)
-  repository = Grit::Repo.new(File.join(SiteConfig.files_path, classification.uuid))
+  repository = Grit::Repo.new(File.join(SiteConfig.files_path, classification.uuid_hash))
   [classification_id, repository]
 end
 
@@ -71,14 +71,17 @@ end
 
 post '/classifications' do
   uuid = params[:uuid]
-  dwca = DWCA.new(uuid, params[:file], SiteConfig.files_path, SiteConfig.root_path)
+  raise DWCA::UUIDFormatError unless UUID.valid?(uuid) 
+  uuid_hash = Classification.uuid_hash(uuid)
+  dwca = DWCA.new(uuid_hash, params[:file], SiteConfig.files_path, SiteConfig.root_path)
   data = dwca.process_file
   classification = Classification.first(:uuid => uuid) || Classification.new(:uuid => uuid)
-  classification.attributes = {:citation => data[:citation], 
-                            :file_name => data[:file_name], 
-                            :title => data[:title], 
-                            :description => data[:description], 
-                            :url => data[:url]}
+  classification.attributes = { :uuid_hash => uuid_hash, 
+                                :citation => data[:citation], 
+                                :file_name => data[:file_name], 
+                                :title => data[:title], 
+                                :description => data[:description], 
+                                :url => data[:url]}
   classification.save
   
   authors = []

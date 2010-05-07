@@ -6,12 +6,12 @@ class DWCA
     FileUtils.rm_rf(path) if File.exists?(path) 
   end
   
-  def initialize(uuid, file, path, root_path)
-    @uuid = uuid
+  def initialize(uuid_hash, file, path, root_path)
+    @uuid_hash = uuid_hash
     @repos_path = path
     @root_path = root_path
     @file = file
-    @repo_path = File.join(@repos_path, @uuid)
+    @repo_path = File.join(@repos_path, @uuid_hash)
     @tmp_path = File.join(@repo_path, "dwca_tmp_dir")
     @dwca_tmp_path = File.join(@tmp_path, @file[:filename])
     @repo = nil
@@ -19,7 +19,6 @@ class DWCA
   end
 
   def process_file
-    raise DWCA::UUIDFormatError unless UUID.valid?(@uuid) 
     @data = obtain_metadata
     add_revision
     @data

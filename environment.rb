@@ -12,6 +12,7 @@ require 'ruby-debug'
 require 'grit'
 require 'yaml'
 require 'dwc-archive'
+require 'digest/sha1'
 
 require 'sinatra' unless defined?(Sinatra)
 
@@ -23,7 +24,8 @@ configure do
                  :author => 'Dmitry Mozzherin',
                  :url_base => 'http://localhost:4567/',
                  :root_path => root_path,
-                 :files_path => File.join(root_path, 'public', 'files')
+                 :files_path => File.join(root_path, 'public', 'files'),
+                 :salt => conf['salt']
                )
 
   #DataMapper.setup(:default, "sqlite3:///#{File.expand_path(File.dirname(__FILE__))}/#{Sinatra::Base.environment}.db")
