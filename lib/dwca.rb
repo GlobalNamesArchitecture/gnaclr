@@ -12,15 +12,17 @@ class DWCA
     @root_path = root_path
     @file = file
     @repo_path = File.join(@repos_path, @uuid)
-    @dwca_path = File.join(@repo_path, @file[:filename])
+    @tmp_path = File.join(@repo_path, "dwca_tmp_dir")
+    @dwca_tmp_path = File.join(@tmp_path, @file[:filename])
     @repo = nil
     @data = nil
   end
 
   def process_file
     raise DWCA::UUIDFormatError unless UUID.valid?(@uuid) 
-    add_data
     @data = obtain_metadata
+    add_revision
+    @data
   end
 
   private
@@ -33,35 +35,39 @@ class DWCA
       `git init`
     end
     @repo = Grit::Repo.new(@repo_path)
+    
+    FileUtils.rm_rf(@tmp_path) if File.exist? @tmp_path
+    FileUtils.mkdir(@tmp_path)
+    data_file = open(@dwca_tmp_path, 'w')
+    data_file.write(@file[:tempfile].read)
+    data_file.close
     Dir.chdir(@root_path)
   end
 
-  def add_data
+  def obtain_metadata
     create_repo_path
-    Dir.chdir(@repo_path)
-    Dir.entries(Dir.pwd).each { |e| File.delete(e) if File.file?(e) }
-    data_file = open(@dwca_path, 'w')
-    data_file.write(@file[:tempfile].read)
-    data_file.close
+    begin
+      dc = DarwinCore.new(@dwca_tmp_path)
+      metadata = dc.metadata
+      @data = metadata ? {:title => metadata.title, :description => metadata.abstract, :url => metadata.url, :citation => metadata.citation, :authors => metadata.authors, :revision_hash => @repo.commits[0].id, :file_name => @file[:filename]} : nil
+      dc.archive.clean
+      Dir.entries(@repo_path).each { |e| File.delete(File.join(@repo_path, e)) if File.file?(File.join(@repo_path, e)) }
+      FileUtils.mv(@dwca_tmp_path, @repo_path)
+    rescue DarwinCore::Error => e
+      DWCA.delete_repo_path(@repo_path) if @repo.commits.empty? 
+      raise e
+    ensure 
+      FileUtils.rm_rf(@tmp_path) if File.exists? @repo_path
+    end
+    @data
+  end
+
+  def add_revision
     Dir.chdir(@repo_path)
     `git add .`
     `git add -u`
     `git commit -m "#{Time.now.strftime('%Y-%m-%d at %I:%M:%S %p')}"`
     Dir.chdir(@root_path)
-  end
-
-  def obtain_metadata
-    begin
-      dc = DarwinCore.new(@dwca_path)
-      metadata = dc.metadata
-      @data = {:title => metadata.title, :description => metadata.abstract, :url => metadata.url, :citation => metadata.citation, :authors => metadata.authors, :revision_hash => @repo.commits[0].id, :file_name => @file[:filename]}
-      dc.archive.clean
-    rescue DarwinCore::Error => e
-      DWCA.delete_repo_path if @repo.commits.empty?
-      DarwinCore.clean_all
-      raise e
-    end
-    @data
   end
 
 end
