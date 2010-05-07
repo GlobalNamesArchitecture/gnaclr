@@ -30,7 +30,7 @@ def search_for(search_term, page, per_page)
   return [] if search_term.strip == ''
   offset = (page - 1) * per_page
   search_term = '[[:<:]]' + search_term
-  res = repository(:default).adapter.select("select distinct c.*, '' as authors from classifications c join author_classifications ac on c.id = ac.classification_id join authors a on a.id = ac.author_id  where c.title rlike ? or a.first_name rlike ? or a.last_name rlike ? limit ?, ?", search_term, search_term, search_term, offset, per_page )
+  res = repository(:default).adapter.select("select distinct c.*, '' as authors from classifications c left join author_classifications ac on c.id = ac.classification_id left join authors a on a.id = ac.author_id  where c.title rlike ? or a.first_name rlike ? or a.last_name rlike ? limit ?, ?", search_term, search_term, search_term, offset, per_page )
   res.each do |c|
     authors = repository(:default).adapter.select("select a.first_name, a.last_name from authors a join author_classifications ac on ac.author_id = a.id where ac.classification_id = ?", c.id)
     c.authors = authors
