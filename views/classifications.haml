@@ -1,4 +1,5 @@
-%h1== Classifications (#{Classification.count} total)
+%h1
+  == #{'Found ' if @search_term}Classifications (#{@total_rows} total)
 - if @search_term
   %h3== Searh term: '#{@search_term}'
 %table#classifications
@@ -12,7 +13,7 @@
     %tr
       %td
         %a{ :href => classificaton_file(c) }= c.title
-      %td= c.authors.map {|a| a.first_name + " " + a.last_name}.join(", ")
+      %td= c.authors.sort_by {|a| a.last_name.downcase}.map {|a| a.first_name + " " + a.last_name}.join(", ")
       %td= c.description
       %td= c.updated_at.strftime('%Y-%m-%d %H:%M:%S')
       %td
