@@ -2,3 +2,14 @@
 
 Gnaclr is a lightweight classification repository for biodiversity classifications files saved in DarwinCore Archive format.
 
+= Development
+
+* rake gems:install
+* echo "create database gnaclr;" | mysql -uroot
+* rake db:migrate
+* mkdir public/files
+* cp database.yml.example database.yml
+* vim database.yml
+* rake
+
+If all the tests pass, start it up, e.g. with `rackup` or `shotgun`.
