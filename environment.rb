@@ -3,6 +3,8 @@ require 'dm-core'
 require 'dm-timestamps'
 require 'dm-validations'
 require 'dm-aggregates'
+require 'dm-migrations'
+require 'dm-transactions'
 require 'will_paginate'
 require 'haml'
 require 'sass'
@@ -13,6 +15,7 @@ require 'grit'
 require 'yaml'
 require 'dwc-archive'
 require 'digest/sha1'
+require 'json'
 
 require 'sinatra' unless defined?(Sinatra)
 
