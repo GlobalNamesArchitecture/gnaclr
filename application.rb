@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'rubygems'
 require 'sinatra'
 #require 'sinatra/respond_to'
@@ -64,16 +66,24 @@ def prepare_data(classifications, total_rows, page, per_page, search_term = nil)
   res
 end
 
-def prepare_classification(classification)
+def prepare_classification(classification, with_commits = true)
   c = classification
   authors = c.authors.sort_by {|a| a.last_name.downcase}.map { |a| {:first_name => a.first_name, :last_name => a.last_name, :email => a.email} }
   file_url = "http://#{request.env['HTTP_HOST']}/files/#{c.uuid_hash}/#{c.file_name}"
-  { 
+  res = { 
     :uuid => c.uuid, :file_url => file_url, :title => c.title, 
     :description => c.description, :url => c.url, 
     :citation => c.citation, :authors => authors, 
     :created => c.created_at, :updated => c.updated_at
   }
+  if with_commits 
+    r = request.env
+    url = "http://#{r['HTTP_HOST']}#{r['REQUEST_URI']}"
+    classification_id, repository = get_repo({:classification_id => classification.id})
+    commits = repository.commits.map { |c| { :message => c.message, :tree_id => c.tree.id, :file_name => c.tree.blobs.first.name, :url => "/classification_file/#{classification_id}/#{c.tree.id}" }}
+    res.merge!({:revisions => commits})
+  end
+  res
 end
 
 def uri_change_param(uri, param, value)
