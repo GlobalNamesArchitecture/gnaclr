@@ -32,7 +32,8 @@ configure do
                )
 
   #DataMapper.setup(:default, "sqlite3:///#{File.expand_path(File.dirname(__FILE__))}/#{Sinatra::Base.environment}.db")
-  DataMapper::Logger.new(STDOUT, :debug)
+  # to see sql during tests uncomment next line
+  # DataMapper::Logger.new(STDOUT, :debug)
   DataMapper.setup(:default, "mysql://#{conf['user']}:#{conf['password']}@#{conf['host']}/gnaclr") 
   # load models
   $LOAD_PATH.unshift("#{File.dirname(__FILE__)}/lib")

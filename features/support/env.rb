@@ -4,6 +4,8 @@ require File.join(File.dirname(__FILE__), '..', '..', 'application.rb')
 
 require 'capybara'
 require 'capybara/cucumber'
+require 'capybara/dsl'
+require 'rack/test'
 require 'spec'
 
 Sinatra::Base.set(:environment, :test)
@@ -11,14 +13,23 @@ Sinatra::Base.set :run, false
 Sinatra::Base.set :raise_errors, true
 Sinatra::Base.set :logging, false
 
-Capybara.app = Sinatra::Base
+Capybara.app = Sinatra::Application.new
 
 class GnaclrWorld
+  def app
+    Sinatra::Application
+  end
+
   include Capybara
+  include Rack::Test::Methods
   include Spec::Expectations
   include Spec::Matchers
 end
 
 World do
   GnaclrWorld.new
+end
+
+Before do
+  DataMapper.auto_migrate!
 end

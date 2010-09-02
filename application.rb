@@ -4,6 +4,7 @@ require 'rubygems'
 require 'sinatra'
 #require 'sinatra/respond_to'
 require 'environment'
+require 'ruby-debug'
 
 configure do
   set :views, "#{File.dirname(__FILE__)}/views"
@@ -17,14 +18,14 @@ end
 
 helpers do
   def classificaton_file(classification)
-    "/files/#{classification.uuid_hash}/#{classification.file_name}"
+    "/files/#{classification.uuid}/#{classification.file_name}"
   end
 end
 
 def get_repo(params)
   classification_id = params[:classification_id]
   classification = Classification.first(:id => classification_id)
-  repository = Grit::Repo.new(File.join(SiteConfig.files_path, classification.uuid_hash))
+  repository = Grit::Repo.new(File.join(SiteConfig.files_path, classification.uuid))
   [classification_id, repository]
 end
 
@@ -69,7 +70,7 @@ end
 def prepare_classification(classification, with_commits = true)
   c = classification
   authors = c.authors.sort_by {|a| a.last_name.downcase}.map { |a| {:first_name => a.first_name, :last_name => a.last_name, :email => a.email} }
-  file_url = "http://#{request.env['HTTP_HOST']}/files/#{c.uuid_hash}/#{c.file_name}"
+  file_url = "http://#{request.env['HTTP_HOST']}/files/#{c.uuid}/#{c.file_name}"
   res = { 
     :uuid => c.uuid, :file_url => file_url, :title => c.title, 
     :description => c.description, :url => c.url, 
@@ -103,6 +104,26 @@ def darwin_core_archive(file)
   rescue DarwinCore::Error
     return 
   end
+end
+
+def create_classification(uuid, data)
+  classification = Classification.first(:uuid => uuid) || Classification.new(:uuid => uuid)
+  classification.attributes = { :uuid => uuid, 
+                                :citation => data[:citation], 
+                                :file_name => data[:file_name], 
+                                :title => data[:title], 
+                                :description => data[:description], 
+                                :url => data[:url]}
+  classification.save
+  classification.author_classifications.each {|ac| ac.destroy!} 
+  authors = []
+  data[:authors].each do |a|
+    author = Author.first(a) || Author.new(a)
+    author.save
+    authors << author
+  end if data[:authors]
+  authors.each { |a| ar = AuthorClassification.new(:author => a, :classification => classification); ar.save }
+  classification.author_classifications.reload
 end
 
 get '/main.css' do
@@ -145,26 +166,11 @@ end
 post '/classifications' do
   uuid = params[:uuid]
   raise DWCA::UUIDFormatError unless UUID.valid?(uuid) 
-  uuid_hash = Classification.uuid_hash(uuid)
-  dwca = DWCA.new(uuid_hash, params[:file], SiteConfig.files_path, SiteConfig.root_path)
+  dwca = DWCA.new(uuid, params[:file], SiteConfig.files_path, SiteConfig.root_path)
   data = dwca.process_file
-  classification = Classification.first(:uuid => uuid) || Classification.new(:uuid => uuid)
-  classification.attributes = { :uuid_hash => uuid_hash, 
-                                :citation => data[:citation], 
-                                :file_name => data[:file_name], 
-                                :title => data[:title], 
-                                :description => data[:description], 
-                                :url => data[:url]}
-  classification.save
-  classification.author_classifications.each {|ac| ac.destroy!} 
-  authors = []
-  data[:authors].each do |a|
-    author = Author.first(a) || Author.new(a)
-    author.save
-    authors << author
-  end if data[:authors]
-  authors.each { |a| ar = AuthorClassification.new(:author => a, :classification => classification); ar.save }
-  classification.author_classifications.reload
+  if data
+    create_classification(uuid, data)
+  end
   redirect '/classifications'
 end
 

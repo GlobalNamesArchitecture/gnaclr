@@ -6,12 +6,12 @@ class DWCA
     FileUtils.rm_rf(path) if File.exists?(path) 
   end
   
-  def initialize(uuid_hash, file, path, root_path)
-    @uuid_hash = uuid_hash
+  def initialize(uuid, file, path, root_path)
+    @uuid = uuid
     @repos_path = path
     @root_path = root_path
     @file = file
-    @repo_path = File.join(@repos_path, @uuid_hash)
+    @repo_path = File.join(@repos_path, @uuid)
     @tmp_path = File.join(@repo_path, "dwca_tmp_dir")
     @dwca_tmp_path = File.join(@tmp_path, @file[:filename])
     @repo = nil
@@ -54,7 +54,8 @@ class DWCA
       FileUtils.mv(@dwca_tmp_path, @repo_path)
     rescue DarwinCore::Error => e
       DWCA.delete_repo_path(@repo_path) if @repo.commits.empty? 
-      raise e
+      # raise e
+      @data = nil
     ensure 
       FileUtils.rm_rf(@tmp_path) if File.exists? @repo_path
     end
