@@ -20,7 +20,7 @@ class DWCA
 
   def process_file
     @data = obtain_metadata
-    add_revision
+    add_revision if @data
     @data
   end
 
@@ -48,7 +48,7 @@ class DWCA
     begin
       dc = DarwinCore.new(@dwca_tmp_path)
       metadata = dc.metadata
-      @data = metadata ? {:title => metadata.title, :description => metadata.abstract, :url => metadata.url, :citation => metadata.citation, :authors => metadata.authors, :revision_hash => @repo.commits[0].id, :file_name => @file[:filename]} : nil
+      @data = metadata ? {:title => metadata.title, :description => metadata.abstract, :url => metadata.url, :citation => metadata.citation, :authors => metadata.authors, :file_name => @file[:filename]} : nil
       dc.archive.clean
       Dir.entries(@repo_path).each { |e| File.delete(File.join(@repo_path, e)) if File.file?(File.join(@repo_path, e)) }
       FileUtils.mv(@dwca_tmp_path, @repo_path)

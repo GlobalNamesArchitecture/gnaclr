@@ -36,11 +36,14 @@ Given /^there is a classification with the UUID$/ do
 end
 
 Then /^classification will be updated$/ do
-  Classification.first(:uuid => @uuid).title.should_not == @title
+  cl = Classification.first(:uuid => @uuid)
+  cl.title.should_not == @title
 end
 
 Then /^old revision will still be accessible$/ do
-  pending # express the regexp above with the code you wish you had
+  repository = Grit::Repo.new(File.join(SiteConfig.files_path, @uuid))
+  names =  repository.commits.map {|c| c.tree.blobs.first.name}
+  names.should == ['data_v1.tar.gz', 'data_v2.tar.gz']
 end
 
 Then /^the file should be rejected$/ do

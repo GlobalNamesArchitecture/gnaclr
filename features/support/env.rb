@@ -32,4 +32,7 @@ end
 
 Before do
   DataMapper.auto_migrate!
+  (1...10).each do |num|
+    FileUtils.rm_rf File.join(SiteConfig.files_path, "00000000-0000-0000-0000-000000000000".gsub("0", num.to_s))
+  end
 end
