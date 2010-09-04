@@ -35,6 +35,14 @@ Given /^a classification with the UUID$/ do
   @title = cl.title
 end
 
+Given /^several revisions of a classification with the UUID$/ do
+  Given %{a "data_v1.tar.gz" local file}
+  And %{I upload the file through the API}
+  And %{a "data_v2.tar.gz" local file}
+  And %{I upload the file through the API}
+end
+
+
 Then /^classification will be updated$/ do
   cl = Classification.first(:uuid => @uuid)
   cl.title.should_not == @title
@@ -49,3 +57,67 @@ end
 Then /^the file should be rejected$/ do
   Classification.count.should == @classification_count
 end
+
+When /^I search for "([^"]*)" using API$/ do |search_term|
+  @search_term = search_term
+  @response = {}
+  ['xml', 'json'].each do |format|
+    visit("/search?search_term=Classification&format=#{format}")
+    @response[format.to_sym] = body
+  end
+end
+
+Then /^I find json data about this classification$/ do
+  res = Crack::JSON.parse @response[:json]
+  c = res['classifications'][0]
+  search_fields = [c['title'], c['authors'].map {|a| a['last_name'] + ' ' + a['first_name']}, c['description']].flatten.join(' ')
+  search_fields.match(/#{@search_term}/).should_not be_nil
+end
+
+Then /^I find xml data about this classification$/ do
+  res = Crack::XML.parse(@response[:xml])
+  c = res['hash']['classifications'][0]
+  search_fields = [c['title'], c['authors'].map {|a| a['last_name'] + ' ' + a['first_name']}, c['description']].flatten.join(' ')
+  search_fields.match(/#{@search_term}/).should_not be_nil 
+end
+
+When /^I search for "([^"]*)" using API with revisions flag$/ do |search_term|
+  @search_term = search_term
+  @response = {}
+  ['xml', 'json'].each do |format|
+    visit("/search?search_term=Classification&format=#{format}&show_revisions=true")
+    @response[format.to_sym] = body
+  end
+end
+
+Then /^I get data about revisions$/ do
+  res = Crack::JSON.parse @response[:json]
+  res['classifications'][0]['revisions'].size.should > 1
+end
+
+When /^I enter an API urls with classification id$/ do
+  @response = {}
+  ['xml', 'json'].each do |format|
+    visit("/classifications/?format=#{format}")
+    @response[format.to_sym] = body
+  end
+  require 'ruby-debug'; debugger
+  puts ''
+end
+
+Then /^I get "([^"]*)" data about this classification$/ do |arg1|
+  ['xml', 'json'].each do |format|
+    visit("/classifications?format=#{format}")
+    @response[format.to_sym] = body
+  end
+end
+
+Then /^I find no classifications$/ do
+  res = Crack::XML.parse(@response[:xml])
+  res['hash']['classifications'].size == 0
+end
+
+When /^I enter an API urls with classification UUID$/ do
+  pending # express the regexp above with the code you wish you had
+end
+

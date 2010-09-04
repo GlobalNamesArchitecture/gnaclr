@@ -32,9 +32,11 @@ namespace :gems do
     required_gems = %w{ sinatra rspec rack-test dm-core dm-validations ruby-debug
                         dm-aggregates dm-timestamps dm-pager haml rest-client grit data_objects
                         dm-migrations will_paginate dm-mysql-adapter
-                        dm-sqlite-adapter dm-transactions json dwc-archive fastercsv
+                        dm-sqlite-adapter dm-transactions json dwc-archive fastercsv, crack
                       }
     required_gems.each { |required_gem| system "gem install #{required_gem}" }
+    # required_versioned_gems = [['activesupport','2.3.5']]
+    # required_versioned_gems.each { |required_gem, version| system "gem install #{required_gem} -v #{version}" }
   end
 end
 

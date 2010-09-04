@@ -29,20 +29,32 @@ Feature: API for posting classification to Gnaclr and reading information about 
   Scenario: Searching API by a metadata words
     Given UUID "11111111-1111-1111-1111-111111111111"
     And a classification with the UUID
-    When I search for a word in its title using API
-    Then I find "json" data about this classification
-    And I find "xml" data about this classification
+    When I search for "Classification" using API
+    Then I find json data about this classification
+    And I find xml data about this classification
+    When I search for "TERM*NOT*IN*DB" using API
+    Then I find no classifications
   
   Scenario: Searching API by a metadata words with revisions flag
     Given UUID "11111111-1111-1111-1111-111111111111"
-    And a classification with the UUID
-    When I search for a word in its title using API with revisions flag
-    Then I get data about revisions for the classifications
+    And several revisions of a classification with the UUID
+    When I search for "Classification" using API with revisions flag
+    Then I get data about revisions
 
   Scenario: Getting a classification info by id from API
     Given UUID "11111111-1111-1111-1111-111111111111"
     And a classification with the UUID
+    And several revisions of a classification with the UUID
     When I enter an API urls with classification id
-    Then I get "json" data about this classification
-    And I get "xml" data about this classification
-    And I get data about revisions of this classification
+    Then I find json data about this classification
+    And I find xml data about this classification
+    And I get data about revisions
+
+  Scenario: Checking a classification info by UUID from API
+    Given UUID "11111111-1111-1111-1111-111111111111"
+    And a classification with the UUID
+    And several revisions of a classification with the UUID
+    When I enter an API urls with classification UUID
+    Then I find json data about this classification
+    And I find xml data about this classification
+    And I get data about revisions

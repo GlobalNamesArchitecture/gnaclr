@@ -3,6 +3,8 @@ require 'sinatra'
 require 'spec'
 require 'spec/interop/test'
 require 'rack/test'
+require 'crack'
+require 'ruby-debug'
 
 # set test environment
 Sinatra::Base.set :environment, :test
@@ -12,8 +14,9 @@ Sinatra::Base.set :logging, false
 
 require 'application'
 
-# establish in-memory database for testing
-DataMapper.setup(:default, "sqlite3::memory:")
+# establish test database connection
+conf = YAML.load(open(File.join(File.dirname(__FILE__),  %w{.. database.yml})).read)
+DataMapper.setup(:default, "mysql://#{conf['user']}:#{conf['password']}@#{conf['host']}/gnaclr") 
 
 Spec::Runner.configure do |config|
 
