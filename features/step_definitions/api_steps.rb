@@ -14,6 +14,7 @@ end
 When /^I upload the file through the API$/ do
   @classification_count = Classification.count
   post('/classifications', :file => Rack::Test::UploadedFile.new(@file, 'applicaation/gzip'), :uuid => @uuid)
+  @classification = Classification.first(:uuid => @uuid)
 end
 
 Then /^classification will be added$/ do
@@ -42,7 +43,6 @@ Given /^several revisions of a classification with the UUID$/ do
   And %{I upload the file through the API}
 end
 
-
 Then /^classification will be updated$/ do
   cl = Classification.first(:uuid => @uuid)
   cl.title.should_not == @title
@@ -69,14 +69,14 @@ end
 
 Then /^I find json data about this classification$/ do
   res = Crack::JSON.parse @response[:json]
-  c = res['classifications'][0]
+  c = res['classifications'] ? res['classifications'][0] : res
   search_fields = [c['title'], c['authors'].map {|a| a['last_name'] + ' ' + a['first_name']}, c['description']].flatten.join(' ')
   search_fields.match(/#{@search_term}/).should_not be_nil
 end
 
 Then /^I find xml data about this classification$/ do
   res = Crack::XML.parse(@response[:xml])
-  c = res['hash']['classifications'][0]
+  c = res['hash']['classifications'] ? res['hash']['classifications'][0] : res['hash']
   search_fields = [c['title'], c['authors'].map {|a| a['last_name'] + ' ' + a['first_name']}, c['description']].flatten.join(' ')
   search_fields.match(/#{@search_term}/).should_not be_nil 
 end
@@ -92,17 +92,16 @@ end
 
 Then /^I get data about revisions$/ do
   res = Crack::JSON.parse @response[:json]
-  res['classifications'][0]['revisions'].size.should > 1
+  c = res['classifications'] ? res['classifications'][0] : res
+  c.size.should > 1
 end
 
 When /^I enter an API urls with classification id$/ do
   @response = {}
   ['xml', 'json'].each do |format|
-    visit("/classifications/?format=#{format}")
+    visit("/classification/#{@classification.id}?format=#{format}")
     @response[format.to_sym] = body
   end
-  require 'ruby-debug'; debugger
-  puts ''
 end
 
 Then /^I get "([^"]*)" data about this classification$/ do |arg1|
@@ -118,6 +117,10 @@ Then /^I find no classifications$/ do
 end
 
 When /^I enter an API urls with classification UUID$/ do
-  pending # express the regexp above with the code you wish you had
+  @response = {}
+  ['xml', 'json'].each do |format|
+    visit("/classification/#{@uuid}?format=#{format}")
+    @response[format.to_sym] = body
+  end
 end
 

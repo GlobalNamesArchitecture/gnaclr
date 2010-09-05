@@ -85,7 +85,7 @@ get '/search' do
       params[:callback] ? "#{params[:callback]}(#{data});" : data
     else
       content_type :xml
-      @prepared_data.to_xml(:dasherize => false, :root => 'all_classifications')
+      @prepared_data.to_xml(:dasherize => false)
     end
   else
     haml :classifications
@@ -97,7 +97,20 @@ get "/classification/:identifier" do
   @classification = UUID.valid?(identifier) ? Classification.first(:uuid => identifier) : Classification.first(:id => identifier.to_i)
   @repository = get_repo(@classification.id)
   @commits = @repository.commits.map { |c| { :message => c.message, :tree_id => c.tree.id, :file_name => c.tree.blobs.first.name } }
-  haml :classification
+  format = params[:format] ? params[:format].strip : nil
+  if format && ['json','xml'].include?(format)
+    @prepared_data = prepare_classification(@classification, true)
+    if format == 'json'
+      content_type :json
+      data = @prepared_data.to_json
+      params[:callback] ? "#{params[:callback]}(#{data});" : data
+    else
+      content_type :xml
+      @prepared_data.to_xml(:dasherize => false)
+    end
+  else
+    haml :classification
+  end
 end
 
 get "/classification_file/:classification_id/:tree_id" do
