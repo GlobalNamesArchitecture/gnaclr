@@ -45,7 +45,7 @@ Feature: API for posting classification to Gnaclr and reading information about 
     Given UUID "11111111-1111-1111-1111-111111111111"
     And a classification with the UUID
     And several revisions of a classification with the UUID
-    When I enter an API urls with classification id
+    When I query API for the classification with the id
     Then I find json data about this classification
     And I find xml data about this classification
     And I get data about revisions
@@ -54,7 +54,7 @@ Feature: API for posting classification to Gnaclr and reading information about 
     Given UUID "11111111-1111-1111-1111-111111111111"
     And a classification with the UUID
     And several revisions of a classification with the UUID
-    When I enter an API urls with classification UUID
+    When I query API for the classification with the UUID
     Then I find json data about this classification
     And I find xml data about this classification
     And I get data about revisions

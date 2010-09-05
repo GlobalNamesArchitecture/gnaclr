@@ -1,8 +1,30 @@
 = Global Names Architecture Classifications Repository (Gnaclr) 
 
 Gnaclr is a lightweight classification repository for biodiversity classifications files saved in DarwinCore Archive format.
+== API
 
-= Development
+results are returned either in XML or JSON format:
+
+  http://example.com/....?format=json
+  http://example.com/....?format=xml
+
+=== Classification by id
+
+  http://example.com/classification/1?format=json
+
+=== Classification by uuid
+
+  http://example.com/classification/28ea7991-4cff-4676-9db0-94fb09eeb906?format=json
+
+=== Search by string
+
+  http://example.com/search?search_term=animalia&format=json
+  
+=== List all classifications
+
+  http://example.com/classifications?format=json
+
+== Development
 
 * rake gems:install
 * echo "create database gnaclr;" | mysql -uroot

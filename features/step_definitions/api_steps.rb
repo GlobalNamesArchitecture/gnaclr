@@ -96,7 +96,7 @@ Then /^I get data about revisions$/ do
   c.size.should > 1
 end
 
-When /^I enter an API urls with classification id$/ do
+When /^I query API for the classification with the id$/ do
   @response = {}
   ['xml', 'json'].each do |format|
     visit("/classification/#{@classification.id}?format=#{format}")
@@ -116,7 +116,7 @@ Then /^I find no classifications$/ do
   res['hash']['classifications'].size == 0
 end
 
-When /^I enter an API urls with classification UUID$/ do
+When /^I query API for the classification with the UUID$/ do
   @response = {}
   ['xml', 'json'].each do |format|
     visit("/classification/#{@uuid}?format=#{format}")
