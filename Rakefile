@@ -28,13 +28,23 @@ namespace :db do
 end
 
 namespace :solr do
+  def run_command(command_type)
+    port = SiteConfig.solr_url.match(/^.*:(\d+)/)[1]
+    command = [File.join(SiteConfig.root_path, 'script', 'solr'), command_type, '--', '-p', port]
+    command += ['-s', SiteConfig.solr_dir] if SiteConfig.solr_dir
+    system(Escape.shell_command(command))
+  end
+
   desc 'start solr server instance in the background'
   task :start => :environment do
     puts "** Starting Bakground Solr instance **"
-    port = SiteConfig.solr_url.match(/^.*:(\d+)/)[1]
-    command = [File.join(SiteConfig.root_path, 'script', 'solr'), 'start', '--', '-p', port]
-    command += ['-s', SiteConfig.solr_dir] if SiteConfig.solr_dir
-    system(Escape.shell_command(command))
+    run_command('start')
+  end
+
+  desc 'start solr server instance in the foreground'
+  task :run => :environment do
+    puts "** Starting Foreground Solr instance **"
+    run_command('run')
   end
 
   desc 'stop solr instance'
