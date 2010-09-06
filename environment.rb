@@ -19,25 +19,27 @@ require 'json'
 
 require 'sinatra' unless defined?(Sinatra)
 
-conf = YAML.load(open(File.join(File.dirname(__FILE__), 'database.yml')).read)
 root_path = File.expand_path(File.dirname(__FILE__))
+conf = YAML.load(open(File.join(root_path, 'config.yml')).read)[Sinatra::Base.environment.to_s]
 configure do
   SiteConfig = OpenStruct.new(
                  :title => 'gnaclr',
                  :author => 'Dmitry Mozzherin',
-                 :url_base => 'http://localhost:4567/',
+                 :url_base => conf['url_base'],
                  :root_path => root_path,
                  :files_path => File.join(root_path, 'public', 'files'),
-                 :salt => conf['salt']
+                 :salt => conf['salt'],
+                 :solr_url => conf['solr_url'],
+                 :solr_dir => Sinatra::Base.environment == 'production' ? nil : File.join(root_path, 'solr', 'solr')
                )
 
-  #DataMapper.setup(:default, "sqlite3:///#{File.expand_path(File.dirname(__FILE__))}/#{Sinatra::Base.environment}.db")
   # to see sql during tests uncomment next line
   # DataMapper::Logger.new(STDOUT, :debug)
-  DataMapper.setup(:default, "mysql://#{conf['user']}:#{conf['password']}@#{conf['host']}/gnaclr") 
+  DataMapper.setup(:default, "mysql://#{conf['user']}:#{conf['password']}@#{conf['host']}/#{conf['database']}") 
+
   # load models
-  $LOAD_PATH.unshift("#{File.dirname(__FILE__)}/lib")
-  $LOAD_PATH.unshift("#{File.dirname(__FILE__)}/models")
-  Dir.glob("#{File.dirname(__FILE__)}/lib/*.rb") { |lib|   require File.basename(lib, '.*') }
-  Dir.glob("#{File.dirname(__FILE__)}/models/*.rb") { |model| require File.basename(model, '.*') }
+  $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib'))
+  $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'models'))
+  Dir.glob(File.join(File.dirname(__FILE__), 'lib', '*.rb')) { |lib|   require File.basename(lib, '.*') }
+  Dir.glob(File.join(File.dirname(__FILE__), 'models', '*.rb')) { |model| require File.basename(model, '.*') }
 end

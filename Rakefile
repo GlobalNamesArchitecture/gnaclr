@@ -1,4 +1,5 @@
 require 'spec/rake/spectask'
+require 'escape'
 
 task :default => :test
 task :test => :spec
@@ -26,6 +27,24 @@ namespace :db do
   end
 end
 
+namespace :solr do
+  desc 'start solr server instance in the background'
+  task :start => :environment do
+    puts "** Starting Bakground Solr instance **"
+    port = SiteConfig.solr_url.match(/^.*:(\d+)/)[1]
+    command = [File.join(SiteConfig.root_path, 'script', 'solr'), 'start', '--', '-p', port]
+    command += ['-s', SiteConfig.solr_dir] if SiteConfig.solr_dir
+    system(Escape.shell_command(command))
+  end
+
+  desc 'stop solr instance'
+  task :stop => :environment do
+    puts "** Stopping Background Solr instance **"
+    system(Escape.shell_command([File.join(SiteConfig.root_path, 'script', 'solr'), 'stop']))
+  end
+end
+
+
 namespace :gems do
   desc 'Install required gems'
   task :install do
@@ -33,6 +52,7 @@ namespace :gems do
                         dm-aggregates dm-timestamps dm-pager haml rest-client grit data_objects
                         dm-migrations will_paginate dm-mysql-adapter
                         dm-sqlite-adapter dm-transactions json dwc-archive fastercsv, crack
+                        optiflag 
                       }
     required_gems.each { |required_gem| system "gem install #{required_gem}" }
     # required_versioned_gems = [['activesupport','2.3.5']]

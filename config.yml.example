@@ -1,0 +1,29 @@
+development:
+  host: localhost
+  user: root
+  password:
+  database: gnaclr
+  url_base: 'http://localhost:4567'
+  salt: substitute_with_your_secret_salt_string
+  solr_url: 'http://localhost:8983/solr'
+
+test:
+  host: localhost
+  user: root
+  password:
+  database: gnaclr_test
+  url_base: 'http://localhost:4567'
+  salt: substitute_with_your_secret_salt_string
+  solr_url: 'http://localhost:8983/solr'
+
+production:
+  host: localhost
+  user: root
+  password:
+  database: gnaclr
+  url_base: 'http://localhost:4567'
+  salt: substitute_with_your_secret_salt_string
+  solr_url: 'http://localhost:8983/solr'
+  
+  
+  

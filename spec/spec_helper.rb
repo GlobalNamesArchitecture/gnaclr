@@ -14,10 +14,6 @@ Sinatra::Base.set :logging, false
 
 require 'application'
 
-# establish test database connection
-conf = YAML.load(open(File.join(File.dirname(__FILE__),  %w{.. database.yml})).read)
-DataMapper.setup(:default, "mysql://#{conf['user']}:#{conf['password']}@#{conf['host']}/gnaclr_test") 
-
 Spec::Runner.configure do |config|
 
   unless defined? CONSTANTS_DEFINED

@@ -3,9 +3,11 @@ config.yml
 database.yml
 public/files/*
 files/*
+*.pid
 *.swp
 *.swo
 *~
 *.db
 *.log
-*.pid
+solr/solr/data
+solr/work
