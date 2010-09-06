@@ -2,9 +2,8 @@
 
 require 'rubygems'
 require 'sinatra'
-require 'environment'
-require 'ruby-debug'
-require 'lib/gnaclr'
+require File.join(File.dirname(__FILE__), 'environment')
+require File.join(File.dirname(__FILE__), 'lib', 'gnaclr')
 
 configure do
   set :views, "#{File.dirname(__FILE__)}/views"
