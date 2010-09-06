@@ -1,4 +1,0 @@
-host: localhost
-user: root
-password: 
-salt: substitute_with_your_secret_salt_string

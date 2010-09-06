@@ -1,9 +1,12 @@
 tags
-database.yml
+config.yml
 public/files/*
 files/*
+*.pid
 *.swp
 *.swo
 *~
 *.db
 *.log
+solr/solr/data
+solr/work
