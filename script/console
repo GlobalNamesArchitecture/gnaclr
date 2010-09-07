@@ -12,5 +12,4 @@ command_line << "--simple-prompt"
 command = command_line.join(" ")
 
 puts "Welcome to the sinatra console interface."
-puts command
 exec command

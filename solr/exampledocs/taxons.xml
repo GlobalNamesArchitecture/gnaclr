@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<add>
+
+</add>
+
+  <!-- begin data schema 
+  <fields>
+    <field name="taxon_classification_id" type="string" indexed="true" stored="true" required="true" />
+    <field name="taxon_id" type="string" indexed="true" stored="true" required="true" /> 
+    <field name="classification_id" type="integer" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="classification_uuid" type="string" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="current_scientific_name" type="text" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="current_scientific_name_exact" type="textExact" indexed="true" stored="true" required="false" multiValued="true" />
+    <copyField source="current_scientific_name" dest="current_scientific_name_exact"/>
+    <field name="scientific_name_synonym" type="text" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="scientific_name_synonym_exact" type="textExact" indexed="true" stored="true" required="false" multiValued="true" />
+    <copyField source="scientific_name_synonym" dest="scientific_name_synonym_exact"/>
+    <field name="common_name" type="text" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="common_name_exact" type="textExact" indexed="true" stored="true" required="false" multiValued="true" />
+    <copyField source="common_name" dest="common_name_exact"/>
+    <field name="path" type="text" indexed="true" stored="true" required="false" multiValued="true" />
+    <field name="rank" type="string" indexed="true" stored="true" required="true" /> 
+  </fields -->
+  
