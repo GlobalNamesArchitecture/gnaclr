@@ -1,8 +1,10 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-require 'sqlite3'
 require 'dwc-archive'
+require 'rest_client'
+require 'crack'
+require 'pp'
 
 OPTIONS = {
   :environment => "development",
@@ -33,19 +35,35 @@ ARGV.options do |opts|
   opts.parse!
 end
 
-require 'sinatra'
+res = RestClient.get('http://gnaclr.globalnames.org/classifications?format=json')
 
-Sinatra::Base.environment == OPTIONS[:environment].to_sym
-Sinatra::Base.set :raise_errors, true
-Sinatra::Base.set :logging, false
-Sinatra::Application.set :run, false
+res = Crack::JSON.parse(res)
 
-require File.join(File.dirname(__FILE__), '..', 'application')
+classification =  res['classifications'].select {|c| c['title'].match /eCyphophthalmi/}[0]
 
-classifications = OPTIONS[:classification_id] ? [Classification.first(:id => OPTIONS[:classifications_id])] : Classification.all
+pp classification.keys
 
-classifications.each do |c|
-  # puts "%s, %s, %s" % [c.id, c.uuid, c.file_name]
-  dc = DarwinCore.new(File.join(SiteConfig.files_path, c.uuid,  c.file_name))
-  puts dc.core.fields
+`wget -P /tmp  #{classification['file_url']}`
+
+dc = DarwinCore.new("/tmp/#{classification['file_url'].split('/')[-1]}")
+
+results = {}
+
+def get_fields(element)
+  data = element.fields.inject({}) { |res, f| res[f[:term].split('/')[-1].to_sym] = f[:index]; res }
+  data[:id] = element.respond_to?(:coreid) ? element.coreid[:index] : element.id[:index]
+  {:fields => data, :path => element.file_path}
 end
+
+core = get_fields(dc.core)
+
+extensions = []
+dc.extensions.each do |e|
+  extensions << get_fields(e)
+end
+
+pp dc.core.read
+
+Class Taxon < Struct.new(:id, :current_names, :parent_id, :synonyms, :path); end
+
+
