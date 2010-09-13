@@ -1,5 +1,6 @@
 tags
 config.yml
+database.yml
 public/files/*
 files/*
 *.pid

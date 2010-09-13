@@ -39,31 +39,17 @@ res = RestClient.get('http://gnaclr.globalnames.org/classifications?format=json'
 
 res = Crack::JSON.parse(res)
 
-classification =  res['classifications'].select {|c| c['title'].match /eCyphophthalmi/}[0]
+# classification =  res['classifications'].select {|c| c['title'].match /eCyphophthalmi/}[0]
 
-pp classification.keys
+res['classifications'].each do |c|
 
-`wget -P /tmp  #{classification['file_url']}`
+  dwc_file = "/tmp/#{c['file_url'].split('/')[-1]}"
+  FileUtils.rm dwc_file if File.exists? dwc_file
+  `wget -P /tmp  #{c['file_url']}`
+  dc = DarwinCore.new(dwc_file)
 
-dc = DarwinCore.new("/tmp/#{classification['file_url'].split('/')[-1]}")
+  res = dc.normalize_classification(verbose = true)
+  require 'ruby-debug'; debugger
 
-results = {}
-
-def get_fields(element)
-  data = element.fields.inject({}) { |res, f| res[f[:term].split('/')[-1].to_sym] = f[:index]; res }
-  data[:id] = element.respond_to?(:coreid) ? element.coreid[:index] : element.id[:index]
-  {:fields => data, :path => element.file_path}
+  puts "'%s' is injested" %  c['title']
 end
-
-core = get_fields(dc.core)
-
-extensions = []
-dc.extensions.each do |e|
-  extensions << get_fields(e)
-end
-
-pp dc.core.read
-
-Class Taxon < Struct.new(:id, :current_names, :parent_id, :synonyms, :path); end
-
-
