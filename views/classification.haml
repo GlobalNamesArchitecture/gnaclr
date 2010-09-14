@@ -7,7 +7,7 @@
   %tbody
     - @commits.each_with_index do |c, i|
       %tr
-        %td= i
+        %td= i + 1
         %td
           %a{ :href => "/classification_file/#{@classification.id}/#{c[:tree_id]}" }
             = c[:file_name]
