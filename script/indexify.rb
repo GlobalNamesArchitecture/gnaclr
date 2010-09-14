@@ -41,7 +41,7 @@ res = Crack::JSON.parse(res)
 
 # classification =  res['classifications'].select {|c| c['title'].match /eCyphophthalmi/}[0]
 
-res['classifications'].each do |c|
+res['classifications'].select {|c| c['title'].match(/fungorum/i)}.each do |c|
 
   dwc_file = "/tmp/#{c['file_url'].split('/')[-1]}"
   FileUtils.rm dwc_file if File.exists? dwc_file
