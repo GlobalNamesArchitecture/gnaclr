@@ -44,9 +44,9 @@ def prepare_classification(classification, show_revisions)
   authors = c.authors.sort_by {|a| a.last_name.downcase}.map { |a| {:first_name => a.first_name, :last_name => a.last_name, :email => a.email} }
   file_url = "#{base_url}/files/#{c.uuid}/#{c.file_name}"
   res = { 
-    :uuid => c.uuid, :file_url => file_url, :title => c.title, 
-    :description => c.description, :url => c.url, 
-    :citation => c.citation, :authors => authors, 
+    :id => c.id, :uuid => c.uuid, :file_url => file_url, 
+    :title => c.title, :description => c.description, 
+    :url => c.url, :citation => c.citation, :authors => authors, 
     :created => c.created_at, :updated => c.updated_at
   }
   if show_revisions 
