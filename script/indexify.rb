@@ -39,24 +39,34 @@ end
 
 def organize_data(data)
   res = []
-  data.each_with_index do |value, i|
+  index = data.each_with_index do |value, i|
     key, value = *value
     taxon = {
-    :taxon_id => key,
-    :current_scientific_name => value.current_name,
-    :current_scientific_name_exact => value.current_name_canonical,
-    :scientific_name_synonyms => value.synonyms.map { |s| [s.name, s.canonical_name] },
-    :common_names => value.vernacular_names.map { |v| v.name },
-    :path => value.classification_path,
-    :rank => value.rank,
+      :taxon_id => key,
+      :current_scientific_name => value.current_name,
+      :current_scientific_name_exact => value.current_name_canonical,
+      :scientific_name_synonyms => value.synonyms.map { |s| [s.name, s.canonical_name] },
+      :common_names => value.vernacular_names.map { |v| v.name },
+      :path => value.classification_path,
+      :rank => value.rank,
     }
     res << taxon
-    if (i+1) % 1000 == 0
-      yield res 
+    if (i+1) % 10000 == 0
+      puts (i+1).to_s + " records injested into solr"
+      yield res, i + 1 
       res = []
     end
+    i + 2
   end
-  yield res
+  yield res, index
+end
+
+def csv_field(a_string)
+  if a_string.index(',')
+    a_string.gsub!(/"/, '""')
+    a_string = '"' + a_string + '"'
+  end
+  a_string
 end
 
 solr_client = SolrClient.new
@@ -75,35 +85,68 @@ res['classifications'].select {|c| c['title'].match(/fungorum/i)}.each do |c|
   dc = DarwinCore.new(dwc_file)
 
   data = dc.normalize_classification(verbose = true)
-  organize_data(data) do |res|
-    builder = Nokogiri::XML::Builder.new do |b|
-      b.add do
-        res.each do |r|
-          b.doc_ do 
-            b.field(c['id'], :name => 'classification_id')
-            b.fields(c['uuid'], :name => 'classification_uuid')
-            b.field(r[:taxon_id], :name => 'id')
-            b.field(c['id'].to_s + '_' + r[:taxon_id], :name => 'taxon_classification_id')
-            b.field(r[:path].join('|'), :name => 'path')
-            b.field(r[:rank], :name=> 'rank')
-            b.field(r[:current_scientific_namel], :name => 'current_scientific_namel')
-            b.field(r[:current_scientific_name_exact], :name => 'current_scientific_name_exact')
-            r[:scientific_name_synonyms].each do |name, canonical|
-              b.field(name, :name => 'scientific_name_synonym')
-              b.field(canonical, :name => 'scientific_name_synonym_exact')
-            end
-            r[:common_names].each do |name|
-              b.field(name, :name => 'canonical_name')
-            end
-          end
-        end
+  no_name = data.select {|k, v| v.current_name.nil? || v.current_name.empty?}
+  no_name.each {|n| puts n}
+  puts 'deleting data from this classification'
+  solr_client.delete("classification_id:#{c['id']}")
+  puts 'starting to add new data'
+  organize_data(data) do |res, i|
+    csv_file = "/tmp/solr_#{i}.csv"
+    f = open(csv_file, 'w')
+    f.write("classification_id,classification_uuid,taxon_id,taxon_classification_id,path,rank,current_scientific_name,current_scientific_name_exact,scientific_name_synonym,scientific_name_synonym_exact,common_name\n")
+    res.each do |r|
+      row = [c['id']]
+      row << c['uuid']
+      row << csv_field(r[:taxon_id])
+      row << csv_field(r[:path].join('|'))
+      row << csv_field(r[:current_scientific_name])
+      row << csv_field(r[:current_scientific_name_exact])
+      synonyms = []
+      synonym_canonicals = []
+      common_names = []
+      r[:scientific_name_synonyms].each do |name, canonical|
+        synonyms << csv_field(name, false)
+        synonym_canonicals << canonical
       end
+      r[:common_names].each do |name|
+        common_names << csv_field(name, false)
+      end
+      row << '"' + synonyms.join(',') + '"'
+      row << '"' + synonym_canonicals.join(',') + '"'
+      f.write(row.join(','))
     end
-    xml_data = builder.to_xml
-    require 'ruby-debug'; debugger
-    solr_client.update_with_xml(xml_data, false)
+    f.close
+    # solr_client.update_with_csv(csv_file)
+    # organize_data(data) do |res|
+    #   builder = Nokogiri::XML::Builder.new do |b|
+    #     b.add do
+    #       res.each do |r|
+    #         b.doc_ do 
+    #           b.field(c['id'], :name => 'classification_id')
+    #           b.field(c['uuid'], :name => 'classification_uuid')
+    #           b.field(r[:taxon_id], :name => 'taxon_id')
+    #           b.field(c['id'].to_s + '_' + r[:taxon_id], :name => 'taxon_classification_id')
+    #           b.field(r[:path].to_a.join('|'), :name => 'path')
+    #           b.field(r[:rank], :name=> 'rank')
+    #           b.field(r[:current_scientific_name], :name => 'current_scientific_name')
+    #           b.field(r[:current_scientific_name_exact], :name => 'current_scientific_name_exact')
+    #           r[:scientific_name_synonyms].each do |name, canonical|
+    #             b.field(name, :name => 'scientific_name_synonym')
+    #             b.field(canonical, :name => 'scientific_name_synonym_exact')
+    #           end
+    #           r[:common_names].each do |name|
+    #             b.field(name, :name => 'common_name')
+    #           end
+    #         end
+    #       end
+    #     end
+    #   end
+    #   xml_data = builder.to_xml
+    #   # open('tmp','w').write(xml_data)
+    #   puts 'tick'
+    #   solr_client.update_with_xml(xml_data, false)
+    # end
+    # solr_client.commit
+
   end
-
-
 end
-
