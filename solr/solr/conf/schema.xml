@@ -88,5 +88,5 @@
   <uniqueKey>taxon_classification_id</uniqueKey>
   
   <!-- default unqualified search field -->
-  <defaultSearchField>scientific_name</defaultSearchField>
+  <defaultSearchField>current_scientific_name</defaultSearchField>
 </schema>
