@@ -19,6 +19,11 @@ class SolrClient
   def commit
     post('<commit />')
   end
+  
+  def update_with_xml(xml_data, to_commit = true)
+    post(xml_data)
+    commit if to_commit
+  end
 
   def update(ruby_data, to_commit = true)
     xml_data = build_solr_xml(ruby_data)
