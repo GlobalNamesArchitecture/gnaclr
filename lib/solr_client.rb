@@ -12,6 +12,7 @@ class SolrClient
   def initialize(solr_url = "http://localhost:8983/solr")
     @url = solr_url
     @url_update = @url + "/update"
+    @url_update_csv = @url + "update/csv?stream.contentType=text/plain;charset=utf-8&stream.file="
     @url_search = @url + '/select/?version=2.2&indent=on&wt=json&q='
   end
   
@@ -22,6 +23,11 @@ class SolrClient
   
   def update_with_xml(xml_data, to_commit = true)
     post(xml_data)
+    commit if to_commit
+  end
+
+  def update_with_csv(csv_file, to_commit = true)
+    get( @url_update_csv + csv_file)
     commit if to_commit
   end
 

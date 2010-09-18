@@ -50,6 +50,8 @@ Daemons.run_proc('gnaclr-solr', options) do
   FileUtils.cd(working_directory) do
     FileUtils.cd(solr_home) do
       args = ['java']
+      args << "-Xms3800m"
+      args << "-Xmx3800m"
       args << "-Djetty.port=#{port}" if port
       args << "-Dsolr.solr.home=#{home}" if home
       args << '-jar' << 'start.jar'
