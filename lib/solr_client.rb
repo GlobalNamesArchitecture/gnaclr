@@ -12,7 +12,7 @@ class SolrClient
   def initialize(solr_url = "http://localhost:8983/solr")
     @url = solr_url
     @url_update = @url + "/update"
-    @url_update_csv = @url + "update/csv?stream.contentType=text/plain;charset=utf-8&stream.file="
+    @url_update_csv = @url + "/update/csv?wt=json&f.common_name.split=true&f.scientific_name_synonym_exact.split=true&f.scientific_name_synonym.split=true&stream.contentType=text/plain;charset=utf-8&stream.file=%s&commit=%s"
     @url_search = @url + '/select/?version=2.2&indent=on&wt=json&q='
   end
   
@@ -27,8 +27,8 @@ class SolrClient
   end
 
   def update_with_csv(csv_file, to_commit = true)
-    get( @url_update_csv + csv_file)
-    commit if to_commit
+    url = @url_update_csv % [csv_file, to_commit.to_s] 
+    get(url)
   end
 
   def update(ruby_data, to_commit = true)
@@ -38,7 +38,7 @@ class SolrClient
   end
     
   def delete(query, to_commit = true)
-    post('<delete><query>#{query}</query></delete>')
+    post("<delete><query>#{query}</query></delete>")
     commit if to_commit
   end
 
@@ -48,10 +48,11 @@ class SolrClient
   end
 
   def search(query, options = {})
-    get(query, options)
+    get_query(query, options)
   end
   
   alias :create :update
+  alias :query :search
   
 private
   def post(xml_data, url = nil)
@@ -59,15 +60,24 @@ private
     RestClient.post url, xml_data, :content_type => :xml, :accept => :xml
   end
 
-  def get(query, options)
+  def get(url)
+    Crack::JSON.parse(RestClient.get url, {:accept => :json})
+  end
+
+  def get_query(query, options)
     url = @url_search.dup 
-    url << URI.encode(%Q[{!lucene} #{query}])
+    url << set_query(query, options)
+    Crack::JSON.parse(RestClient.get url, {:accept => :json})
+  end
+
+  def set_query(query, options)
+    res = URI.encode(%Q[{!lucene} #{query}])
     limit  = options[:per_page] ? options[:per_page].to_i : 10
     page = options[:page] ? options[:page].to_i : 1
     offset = (page - 1) * limit
-    url << '&start=' << URI.encode(offset.to_s)
-    url << '&rows='  << URI.encode(limit.to_s)
-    Crack::JSON.parse(RestClient.get url, {:accept => :json})
+    res << '&start=' << URI.encode(offset.to_s)
+    res << '&rows='  << URI.encode(limit.to_s)
+    res
   end
 
   # Takes an array of hashes. Each hash has only string or array of strings values. Array is converted into an xml ready

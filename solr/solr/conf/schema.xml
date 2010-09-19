@@ -81,7 +81,7 @@
     <field name="common_name_exact" type="textExact" indexed="true" stored="true" required="false" multiValued="true" />
     <copyField source="common_name" dest="common_name_exact"/>
     <field name="path" type="text" indexed="true" stored="true" required="false" multiValued="true" />
-    <field name="rank" type="string" indexed="true" stored="true" required="true" /> 
+    <field name="rank" type="string" indexed="true" stored="true" required="false" /> 
   </fields>
   
   <!-- force uniqueness -->
