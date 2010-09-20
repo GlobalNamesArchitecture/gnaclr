@@ -79,6 +79,7 @@ end
 def create_classification(uuid, data)
   classification = Classification.first(:uuid => uuid) || Classification.new(:uuid => uuid)
   classification.attributes = { :uuid => uuid, 
+                                :commit_hash => data[:commit_hash],
                                 :citation => data[:citation], 
                                 :file_name => data[:file_name], 
                                 :title => data[:title], 
@@ -94,6 +95,7 @@ def create_classification(uuid, data)
   end if data[:authors]
   authors.each { |a| ar = AuthorClassification.new(:author => a, :classification => classification); ar.save }
   classification.author_classifications.reload
+  classification
 end
 
 get '/main.css' do

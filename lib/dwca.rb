@@ -20,7 +20,11 @@ class DWCA
 
   def process_file
     @data = obtain_metadata
-    add_revision if @data
+    if @data
+      add_revision
+      repo = Grit::Repo.new(@repo_path)
+      @data.merge!(:commit_hash => repo.commits[0].id)
+    end
     @data
   end
 

@@ -1,7 +1,6 @@
 require 'rubygems'
 require 'rest_client'
 require 'nokogiri'
-require 'crack'
 require 'uri'
 
 class SolrClient
@@ -61,13 +60,13 @@ private
   end
 
   def get(url)
-    Crack::JSON.parse(RestClient.get url, {:accept => :json})
+    JSON.parse(RestClient.get(url, {:accept => :json}), :symbolize_names => true)
   end
 
   def get_query(query, options)
     url = @url_search.dup 
     url << set_query(query, options)
-    Crack::JSON.parse(RestClient.get url, {:accept => :json})
+    JSON.parse(RestClient.get(url, {:accept => :json}), :symbolize_names => true)
   end
 
   def set_query(query, options)

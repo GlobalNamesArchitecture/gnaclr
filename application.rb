@@ -4,6 +4,8 @@ require 'rubygems'
 require 'sinatra'
 require File.join(File.dirname(__FILE__), 'environment')
 require File.join(File.dirname(__FILE__), 'lib', 'gnaclr')
+require File.join(File.dirname(__FILE__), 'lib', 'solr_ingest')
+require 'resque'
 
 configure do
   set :views, "#{File.dirname(__FILE__)}/views"
@@ -64,7 +66,8 @@ post '/classifications' do
   dwca = DWCA.new(uuid, params[:file], SiteConfig.files_path, SiteConfig.root_path)
   data = dwca.process_file
   if data
-    create_classification(uuid, data)
+    classification = create_classification(uuid, data)
+    Resque.enqueue(Gnaclr::SolrIngest, classification.id)
   end
   redirect '/classifications'
 end
