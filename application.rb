@@ -3,8 +3,6 @@
 require 'rubygems'
 require 'sinatra'
 require File.join(File.dirname(__FILE__), 'environment')
-require File.join(File.dirname(__FILE__), 'lib', 'gnaclr')
-require File.join(File.dirname(__FILE__), 'lib', 'solr_ingest')
 require 'resque'
 
 configure do
@@ -28,6 +26,11 @@ helpers do
     port = r['SERVER_PORT'] == "80" ? '' : ":#{r['SERVER_PORT']}"
     @@base_url = "http://#{r['SERVER_NAME']}#{port}"
   end
+end
+
+get '/main.css' do
+  content_type 'text/css', :charset => 'utf-8'
+  sass :main
 end
 
 # root page
@@ -66,31 +69,25 @@ post '/classifications' do
   dwca = DWCA.new(uuid, params[:file], SiteConfig.files_path, SiteConfig.root_path)
   data = dwca.process_file
   if data
-    classification = create_classification(uuid, data)
+    classification = Gnaclr.create_classification(uuid, data)
     Resque.enqueue(Gnaclr::SolrIngest, classification.id)
   end
   redirect '/classifications'
 end
 
 get '/search' do
-  page = params[:page] ? params[:page].to_i : 1
-  per_page = params[:per_page] ? params[:per_page].to_i : 30
-  @search_term = params[:search_term].to_s
-  @classifications, @total_rows = search_for(@search_term, page, per_page)
-  format = params[:format] ? params[:format].strip : nil
-  if format && ['json','xml'].include?(format)
-    show_revisions = params[:show_revisions] && params[:show_revisions].strip == 'true' ? true : false
-    @prepared_data = prepare_data(@classifications, @total_rows, page, per_page, @search_term, show_revisions)
+  if params[:search_term]
+    @search_result, format = search_for(params)
     if format == 'json'
       content_type :json
-      data = @prepared_data.to_json
+      data = @search_result.to_json
       params[:callback] ? "#{params[:callback]}(#{data});" : data
-    else
+    elsif format == 'xml'
       content_type :xml
-      @prepared_data.to_xml(:dasherize => false)
+      @search_result.to_xml(:dasherize => false)
+    else
+      haml :search_result
     end
-  else
-    haml :classifications
   end
 end
 

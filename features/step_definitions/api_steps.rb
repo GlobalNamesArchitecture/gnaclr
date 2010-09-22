@@ -124,3 +124,21 @@ When /^I query API for the classification with the UUID$/ do
   end
 end
 
+Given /^classification is imported to Solr$/ do
+  si = Gnaclr::SolrIngest.new(@classification)
+  si.ingest
+end
+
+When /^I search for "([^"]*)"$/ do |search_term|
+  @response = {}
+  search_term = URI.escape(search_term)
+  ['xml', 'json'].each do |format|
+    visit("/search?search_term=#{search_term}=#{format}")
+    @response[format.to_sym] = body
+  end
+end
+
+Then /^I get classification and path to this name$/ do
+  require 'ruby-debug'; debugger
+  puts ''
+end

@@ -39,7 +39,8 @@ configure do
 
   # load models
   $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib'))
+  $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib', 'gnaclr'))
   $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'models'))
-  Dir.glob(File.join(File.dirname(__FILE__), 'lib', '*.rb')) { |lib|   require File.basename(lib, '.*') }
+  Dir.glob(File.join(File.dirname(__FILE__), 'lib', '**', '*.rb')) { |lib|   require File.basename(lib, '.*') }
   Dir.glob(File.join(File.dirname(__FILE__), 'models', '*.rb')) { |model| require File.basename(model, '.*') }
 end

@@ -4,6 +4,7 @@ require 'spec'
 require 'spec/interop/test'
 require 'rack/test'
 require 'crack'
+require 'redis'
 require 'ruby-debug'
 
 # set test environment
@@ -13,6 +14,7 @@ Sinatra::Base.set :raise_errors, true
 Sinatra::Base.set :logging, false
 
 require 'application'
+$redis = Redis.new
 
 Spec::Runner.configure do |config|
 
@@ -26,6 +28,8 @@ Spec::Runner.configure do |config|
   # reset database before each example is run
   config.before(:each) do 
     DataMapper.auto_migrate!
+    $redis.select(0) # selecting resque jobs db
+    $redis.flushdb # cleaning up the que
     DWCA.delete_repo_path(File.join(SiteConfig.files_path, UUID1))
   end
 end

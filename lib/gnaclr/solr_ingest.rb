@@ -1,6 +1,5 @@
 require 'dwc-archive'
 require 'rest_client'
-require File.join(File.dirname(__FILE__), 'solr_client')
 
 module Gnaclr
 
@@ -15,13 +14,15 @@ module Gnaclr
     @queue = :solr_ingest
 
     def self.perform(classification_id, solr_url = SOLR_URL)
-      si = SolrIngest.new(classification_id, solr_url)
+      classification = Classification.first(:id => classification_id)    
+      raise RuntimeError, "No classification with id #{classification_id}" unless classification
+      si = SolrIngest.new(classification, solr_url)
       si.ingest
     end
 
-    def initialize(classification_id, solr_url = SOLR_URL)
-      @classification = Classification.first(:id => classification_id)    
-      raise RuntimeError, "No classification with id #{classification_id}" unless @classification
+    def initialize(classification, solr_url = SOLR_URL)
+      raise RuntimeError, "Not a classification" unless classification.is_a? Classification
+      @classification = classification
       @solr_client = SolrClient.new(solr_url)
       @temp_file = "solr_" + @classification.uuid + "_"
     end
