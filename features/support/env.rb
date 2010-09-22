@@ -25,4 +25,6 @@ Before do
   (1...2).each do |num|
     FileUtils.rm_rf File.join(SiteConfig.files_path, "00000000-0000-0000-0000-000000000000".gsub("0", num.to_s))
   end
+  $redis.select(0)
+  $redis.flushdb
 end

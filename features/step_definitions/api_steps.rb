@@ -124,3 +124,15 @@ When /^I query API for the classification with the UUID$/ do
   end
 end
 
+Given /^classification is imported to Solr$/ do
+  si = Gnaclr::SolrIngest.new(@classification)
+  si.ingest
+end
+
+When /^I search for "([^"]*)"$/ do |arg1|
+  pending # express the regexp above with the code you wish you had
+end
+
+Then /^I get classification and path to this name$/ do
+  pending # express the regexp above with the code you wish you had
+end

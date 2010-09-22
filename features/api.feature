@@ -41,6 +41,27 @@ Feature: API for posting classification to Gnaclr and reading information about 
     When I search for "Classification" using API with revisions flag
     Then I get data about revisions
 
+  Scenario: Searching API for scientific names
+    Given UUID "11111111-1111-1111-1111-111111111111"
+    And a classification with the UUID
+    And classification is imported to Solr
+    When I search for "Apachekolos clavipes"
+    Then I get classification and path to this name
+
+  Scenario: Searching API for scientific name synonyms
+    Given UUID "11111111-1111-1111-1111-111111111111"
+    And a classification with the UUID
+    And classification is imported to Solr
+    When I search for "Leptogaster scapularis"
+    Then I get classification and path to this name
+
+  Scenario: Searching API for common names
+    Given UUID "11111111-1111-1111-1111-111111111111"
+    And a classification with the UUID
+    And classification is imported to Solr
+    When I search for "Grass flies"
+    Then I get classification and path to this name
+
   Scenario: Getting a classification info by id from API
     Given UUID "11111111-1111-1111-1111-111111111111"
     And a classification with the UUID
@@ -58,3 +79,4 @@ Feature: API for posting classification to Gnaclr and reading information about 
     Then I find json data about this classification
     And I find xml data about this classification
     And I get data about revisions
+
