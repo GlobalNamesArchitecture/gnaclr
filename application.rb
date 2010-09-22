@@ -98,7 +98,8 @@ get "/classification/:identifier" do
   identifier = params[:identifier]
   @classification = UUID.valid?(identifier) ? Classification.first(:uuid => identifier) : Classification.first(:id => identifier.to_i)
   @repository = get_repo(@classification.id)
-  @commits = @repository.commits.map { |c| { :message => c.message, :tree_id => c.tree.id, :file_name => c.tree.blobs.first.name } }
+  count = 0
+  @commits = get_commits(@repository, @classification)
   format = params[:format] ? params[:format].strip : nil
   if format && ['json','xml'].include?(format)
     @prepared_data = prepare_classification(@classification, true)

@@ -5,10 +5,10 @@
       %th File
       %th Message
   %tbody
-    - @commits.each_with_index do |c, i|
+    - @commits.each do |c|
       %tr
-        %td= i + 1
+        %td= c[:sequence_number]
         %td
-          %a{ :href => "/classification_file/#{@classification.id}/#{c[:tree_id]}" }
+          %a{ :href => c[:url] }
             = c[:file_name]
         %td= c[:message]

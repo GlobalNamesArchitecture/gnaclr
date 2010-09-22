@@ -51,10 +51,26 @@ def prepare_classification(classification, show_revisions)
   }
   if show_revisions 
     repository = get_repo(classification.id)
-    commits = repository.commits.map { |c| { :message => c.message, :tree_id => c.tree.id, :file_name => c.tree.blobs.first.name, :url => "#{base_url}/classification_file/#{classification.id}/#{c.tree.id}" }}
+    commits = get_commits(repository, classification)
     res.merge!({:revisions => commits})
   end
   res
+end
+
+def get_commits(repo, classification)
+  count = 0
+  repo.commits.map do |c| 
+    count += 1 
+    {
+      :sequence_number => count, 
+      :committed_date => c.committed_date, 
+      :message => c.message, 
+      :id => c.id, 
+      :tree_id => c.tree.id,
+      :file_name => c.tree.blobs.first.name, 
+      :url => "#{base_url}/classification_file/#{classification.id}/#{c.tree.id}" 
+    }
+  end
 end
 
 def uri_change_param(uri, param, value)
