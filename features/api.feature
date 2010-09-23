@@ -43,21 +43,21 @@ Feature: API for posting classification to Gnaclr and reading information about 
 
   Scenario: Searching API for scientific names
     Given UUID "11111111-1111-1111-1111-111111111111"
-    And a classification with the UUID
+    And several revisions of a classification with the UUID
     And classification is imported to Solr
     When I search for "Apachekolos clavipes"
     Then I get classification and path to this name
 
   Scenario: Searching API for scientific name synonyms
     Given UUID "11111111-1111-1111-1111-111111111111"
-    And a classification with the UUID
+    And several revisions of a classification with the UUID
     And classification is imported to Solr
     When I search for "Leptogaster scapularis"
     Then I get classification and path to this name
 
   Scenario: Searching API for common names
     Given UUID "11111111-1111-1111-1111-111111111111"
-    And a classification with the UUID
+    And several revisions of a classification with the UUID
     And classification is imported to Solr
     When I search for "Grass flies"
     Then I get classification and path to this name

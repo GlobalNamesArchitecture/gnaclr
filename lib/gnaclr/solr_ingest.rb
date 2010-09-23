@@ -1,6 +1,5 @@
 require 'dwc-archive'
 require 'rest_client'
-require File.join(File.dirname(__FILE__), 'solr_client')
 
 module Gnaclr
 

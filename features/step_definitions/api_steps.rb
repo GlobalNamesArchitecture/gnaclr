@@ -129,10 +129,16 @@ Given /^classification is imported to Solr$/ do
   si.ingest
 end
 
-When /^I search for "([^"]*)"$/ do |arg1|
-  pending # express the regexp above with the code you wish you had
+When /^I search for "([^"]*)"$/ do |search_term|
+  @response = {}
+  search_term = URI.escape(search_term)
+  ['xml', 'json'].each do |format|
+    visit("/search?search_term=#{search_term}=#{format}")
+    @response[format.to_sym] = body
+  end
 end
 
 Then /^I get classification and path to this name$/ do
-  pending # express the regexp above with the code you wish you had
+  require 'ruby-debug'; debugger
+  puts ''
 end
