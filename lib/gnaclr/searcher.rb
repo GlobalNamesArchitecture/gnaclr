@@ -2,12 +2,17 @@ module Gnaclr
   class Searcher
     attr_reader :args
 
-    def self.search_all
+    def self.search_all(params)
+      sci = Gnaclr::Searcher.new(ScientificNameSearcher.new, params)
+      vern = Gnaclr::Searcher.new(VernacularNameSearcher.new, params)
+      meta = Gnaclr::Searcher.new(ClassificationMetadataSearcher.new, params)
+      [{ :scientific_name => sci.search, :vernacular_name => vern.search, :classification_metadata => meta.search }, format]
     end
 
-    def initialize(engine)
+    def initialize(engine, params = nil)
       Raise "Not a searcher" unless engine.is_a? SearcherAbstract
       @engine = engine
+      self.args = params if params
     end
     
     def args=(params)
@@ -16,13 +21,15 @@ module Gnaclr
       search_term = params[:search_term].to_s
       format = params[:format] ? params[:format].strip : nil
       format = ['json','xml'].include?(format) ? format : nil
+      callback = params[:callback] ? params[:callback].strip : nil
       show_revisions = params[:show_revisions] && params[:show_revisions].strip == 'true' ? true : false
       @args = {
         :page => page, 
         :per_page => per_page, 
         :search_term => search_term, 
         :format => format, 
-        :show_revisions => show_revisions
+        :show_revisions => show_revisions,
+        :callback => callback
       }
       @engine.args = @args
     end
@@ -51,6 +58,7 @@ module Gnaclr
     end
     
     def prepare_results(classifications, total_rows)
+      require 'ruby-debug'; debugger
       total_pages = total_rows/@args[:per_page] + (total_rows % @args[:per_page] == 0 ? 0 : 1)
       previous_page = @args[:page] > 1 ? @args[:page] - 1 : nil
       next_page = @args[:page] < total_pages ? @args[:page] + 1 : nil
