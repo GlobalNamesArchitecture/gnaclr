@@ -2,12 +2,17 @@ module Gnaclr
   class Searcher
     attr_reader :args
 
-    def self.search_all
+    def self.search_all(params)
+      sci = Gnaclr::Searcher.new(ScientificNameSearcher.new, params)
+      vern = Gnaclr::Searcher.new(VernacularNameSearcher.new, params)
+      meta = Gnaclr::Searcher.new(ClassificationMetadataSearcher.new, params)
+      [{ :scientific_name => sci.search, :vernacular_name => vern.search, :classification_metadata => meta.search }, format]
     end
 
-    def initialize(engine)
+    def initialize(engine, params = nil)
       Raise "Not a searcher" unless engine.is_a? SearcherAbstract
       @engine = engine
+      self.args = params if params
     end
     
     def args=(params)
@@ -16,13 +21,15 @@ module Gnaclr
       search_term = params[:search_term].to_s
       format = params[:format] ? params[:format].strip : nil
       format = ['json','xml'].include?(format) ? format : nil
+      callback = params[:callback] ? params[:callback].strip : nil
       show_revisions = params[:show_revisions] && params[:show_revisions].strip == 'true' ? true : false
       @args = {
         :page => page, 
         :per_page => per_page, 
         :search_term => search_term, 
         :format => format, 
-        :show_revisions => show_revisions
+        :show_revisions => show_revisions,
+        :callback => callback
       }
       @engine.args = @args
     end
@@ -49,9 +56,46 @@ module Gnaclr
       res, total = search_raw
       prepare_results(res, total) 
     end
+    
+    def prepare_results(classifications, total_rows)
+      require 'ruby-debug'; debugger
+      total_pages = total_rows/@args[:per_page] + (total_rows % @args[:per_page] == 0 ? 0 : 1)
+      previous_page = @args[:page] > 1 ? @args[:page] - 1 : nil
+      next_page = @args[:page] < total_pages ? @args[:page] + 1 : nil
+      cl = []
+      classifications.each do |c|
+        cl << prepare_classification(c)
+      end
+      res = {
+        :page => @args[:page], :per_page => @args[:per_page], :total_count => total_rows,
+        :total_pages => total_pages, :previous_page => previous_page, :next_page => next_page,
+        :classifications => cl
+      }
+      res.merge!(:search_term => @args[:search_term]) unless @args[:search_term].to_s.empty?
+      res
+    end  
 
     def search_raw
       return [[],0] if @args[:search_term].empty?
+    end
+    
+    private
+    def classification_hash(classification)
+      c = classification
+      authors = c.authors.sort_by {|a| a.last_name.downcase}.map { |a| {:first_name => a.first_name, :last_name => a.last_name, :email => a.email} }
+      file_url = "/files/#{c.uuid}/#{c.file_name}"
+      res = {
+        :id => c.id, :uuid => c.uuid, :file_url => file_url,
+        :title => c.title, :description => c.description,
+        :url => c.url, :citation => c.citation, :authors => authors,
+        :created => c.created_at, :updated => c.updated_at
+      }
+      if @args[:show_revisions]
+        repository = Gnaclr::Repository.get_repo(classification.id)
+        commits = Gnaclr::Repository.get_commits(repository, classification)
+        res.merge!({:revisions => commits})
+      end
+      res
     end
     
   end
@@ -78,50 +122,55 @@ module Gnaclr
       [res, total_rows]
     end
 
-    def prepare_results(classifications, total_rows)
-      total_pages = total_rows/@args[:per_page] + (total_rows % @args[:per_page] == 0 ? 0 : 1)
-      previous_page = @args[:page] > 1 ? @args[:page] - 1 : nil
-      next_page = @args[:page] < total_pages ? @args[:page] + 1 : nil
-      cl = []
-      classifications.each do |c|
-        cl << prepare_classification(c)
-      end
-      res = {
-        :page => @args[:page], :per_page => @args[:per_page], :total_count => total_rows,
-        :total_pages => total_pages, :previous_page => previous_page, :next_page => next_page,
-        :classifications => cl
-      }
-      res.merge!(:search_term => @args[:search_term]) unless @args[:search_term].to_s.empty?
-      res
-    end  
-
     def prepare_classification(classification)
-      c = classification
-      authors = c.authors.sort_by {|a| a.last_name.downcase}.map { |a| {:first_name => a.first_name, :last_name => a.last_name, :email => a.email} }
-      file_url = "/files/#{c.uuid}/#{c.file_name}"
-      res = {
-        :id => c.id, :uuid => c.uuid, :file_url => file_url,
-        :title => c.title, :description => c.description,
-        :url => c.url, :citation => c.citation, :authors => authors,
-        :created => c.created_at, :updated => c.updated_at
-      }
-      if @args[:show_revisions]
-        repository = Gnaclr::Repository.get_repo(classification.id)
-        commits = Gnaclr::Repository.get_commits(repository, classification)
-        res.merge!({:revisions => commits})
-      end
-      res
+      classification_hash(classification)
     end
   end
 
   class ScientificNameSearcher < SearcherAbstract
+    def search_raw
+      super
+      query = %Q|current_scientific_name_exact:"#{@args[:search_term]}" OR scientific_name_synonym_exact:"#{@args[:search_term]}"|
+      res = @solr_client.search(query, @args)
+      total = res[:response][:numFound]
+      [res[:response][:docs], total]
+    end
+
+    def prepare_classification(classification)
+      c = Classification.first(:id => classification[:classification_id][0])
+      res = classification_hash(c)
+      found_as = (@args[:search_term].strip == classification[:current_scientific_name_exact]) ? 'current_name' : 'synonym'
+      res.merge!({
+        :rank => classification[:rank][0], 
+        :path => classification[:path][0],
+        :vernacular_names => classification[:common_name],
+        :current_name => classification[:current_scientific_name][0],
+        :synonyms => classification[:current_name_synonym],
+        :found_as => found_as
+      })
+    end
 
   end
 
   class VernacularNameSearcher < SearcherAbstract
     def search_raw
       super
-      res = @solr_client.search(%Q|common_name_exact:"#{@args[:search_term]}"|)
+      query = %Q|common_name_exact:"#{@args[:search_term]}"|
+      res = @solr_client.search(query, @args)
+      total = res[:response][:numFound]
+      [res[:response][:docs], total]
+    end
+
+    def prepare_classification(classification)
+      c = Classification.first(:id => classification[:classification_id][0])
+      res = classification_hash(c)
+      res.merge!({
+        :rank => classification[:rank][0], 
+        :path => classification[:path][0],
+        :vernacular_names => classification[:common_name],
+        :current_name => classification[:current_scientific_name][0],
+        :synonyms => classification[:current_name_synonym]
+      })
     end
   end
 end

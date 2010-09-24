@@ -71,7 +71,7 @@ private
 
   def set_query(query, options)
     res = URI.encode(%Q[{!lucene} #{query}])
-    limit  = options[:per_page] ? options[:per_page].to_i : 10
+    limit  = options[:per_page] ? options[:per_page].to_i : 30 
     page = options[:page] ? options[:page].to_i : 1
     offset = (page - 1) * limit
     res << '&start=' << URI.encode(offset.to_s)

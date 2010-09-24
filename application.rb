@@ -76,8 +76,10 @@ post '/classifications' do
 end
 
 get '/search' do
+  s = Gnaclr::Searcher.new(params)
   if params[:search_term]
-    @search_result, format = search_for(params)
+    @search_result = s.search
+    format = s.args[:format]
     if format == 'json'
       content_type :json
       data = @search_result.to_json
@@ -94,9 +96,9 @@ end
 get "/classification/:identifier" do
   identifier = params[:identifier]
   @classification = UUID.valid?(identifier) ? Classification.first(:uuid => identifier) : Classification.first(:id => identifier.to_i)
-  @repository = get_repo(@classification.id)
+  @repository = Gnaclr::Repository.get_repo(@classification.id)
   count = 0
-  @commits = get_commits(@repository, @classification)
+  @commits = Gnaclr::Repository.get_commits(@repository, @classification)
   format = params[:format] ? params[:format].strip : nil
   if format && ['json','xml'].include?(format)
     @prepared_data = prepare_classification(@classification, true)
