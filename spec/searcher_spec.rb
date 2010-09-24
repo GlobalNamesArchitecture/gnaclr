@@ -65,8 +65,22 @@ describe Gnaclr::Searcher do
     params.merge!(:search_term => 'Grass flies', :page => 1 )
     @vern_search.args = params
     res = @vern_search.search_raw
-    require 'ruby-debug'; debugger
-    res.should == 2
+    res[0].size.should == 1
+    res[1].should == 1
+    res = @vern_search.search
+    res.is_a?(Hash).should be_true
+    res.empty?.should be_false
+    res[:classifications][0][:path].should == "Leptogastrinae"
+    params.merge!(:search_term => 'Leptogaster weslacensis', :page => 1 )
+    @sci_search.args = params
+    res = @sci_search.search_raw
+    res[0].size.should == 1
+    res[1].should == 1
+    res = @sci_search.search
+    res.is_a?(Hash).should be_true
+    res.empty?.should be_false
+    res[:classifications][0][:path].should == "Leptogastrinae|Leptogastrini|Apachekolos|Apachekolos weslacensis"
+    res[:classifications][0][:found_as] == 'synonym'
   end
 
 end
