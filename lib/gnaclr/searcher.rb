@@ -6,7 +6,10 @@ module Gnaclr
       sci = Gnaclr::Searcher.new(ScientificNameSearcher.new, params)
       vern = Gnaclr::Searcher.new(VernacularNameSearcher.new, params)
       meta = Gnaclr::Searcher.new(ClassificationMetadataSearcher.new, params)
-      [{ :scientific_name => sci.search, :vernacular_name => vern.search, :classification_metadata => meta.search }, format]
+      sci_res = sci.search
+      vern_res = vern.search
+      meta_res = meta.search
+      [{:search_term => sci.args[:search_term], :scientific_name_search => sci_res, :vernacular_name_search => vern_res, :classification_metadata_search => meta_res }, sci.args]
     end
 
     def initialize(engine, params = nil)
@@ -31,7 +34,7 @@ module Gnaclr
         :show_revisions => show_revisions,
         :callback => callback
       }
-      @engine.args = @args
+      @engine.args = @args.dup
     end
 
     def search
@@ -58,7 +61,6 @@ module Gnaclr
     end
     
     def prepare_results(classifications, total_rows)
-      require 'ruby-debug'; debugger
       total_pages = total_rows/@args[:per_page] + (total_rows % @args[:per_page] == 0 ? 0 : 1)
       previous_page = @args[:page] > 1 ? @args[:page] - 1 : nil
       next_page = @args[:page] < total_pages ? @args[:page] + 1 : nil
@@ -71,7 +73,6 @@ module Gnaclr
         :total_pages => total_pages, :previous_page => previous_page, :next_page => next_page,
         :classifications => cl
       }
-      res.merge!(:search_term => @args[:search_term]) unless @args[:search_term].to_s.empty?
       res
     end  
 

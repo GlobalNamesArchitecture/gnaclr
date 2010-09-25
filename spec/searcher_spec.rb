@@ -50,12 +50,11 @@ describe Gnaclr::Searcher do
     post('/classifications', :file => Rack::Test::UploadedFile.new(FILE1_1, 'application/gzip'), :uuid => UUID1)
     params = @params.clone
     params.merge!(:search_term => 'Classification', :page => 1, :format => 'xml' )
-    $yaya = 1
-    res, format = Gnaclr::Searcher.search_all(params)
-    format.should == 'xml'
-    res.key?(:scientific_name).should be_true
-    res.key?(:vernacular_name).should be_true
-    res.key?(:classification_metadata).should be_true
+    res, args = Gnaclr::Searcher.search_all(params)
+    args[:format].should == 'xml'
+    res.key?(:scientific_name_search).should be_true
+    res.key?(:vernacular_name_search).should be_true
+    res.key?(:classification_metadata_search).should be_true
   end
 
   it "should perform classification metadata search" do

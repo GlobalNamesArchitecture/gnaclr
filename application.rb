@@ -76,20 +76,16 @@ post '/classifications' do
 end
 
 get '/search' do
-  s = Gnaclr::Searcher.new(params)
-  if params[:search_term]
-    @search_result = s.search
-    format = s.args[:format]
-    if format == 'json'
-      content_type :json
-      data = @search_result.to_json
-      params[:callback] ? "#{params[:callback]}(#{data});" : data
-    elsif format == 'xml'
-      content_type :xml
-      @search_result.to_xml(:dasherize => false)
-    else
-      haml :search_result
-    end
+  @search_result, args = Gnaclr::Searcher.search_all(params)
+  if args[:format] == 'json'
+    content_type :json
+    data = @search_result.to_json
+    args[:callback] ? "#{args[:callback]}(#{data});" : data
+  elsif format == 'xml'
+    content_type :xml
+    @search_result.to_xml(:dasherize => false)
+  else
+    haml :search_result
   end
 end
 
