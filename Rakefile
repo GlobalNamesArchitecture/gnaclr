@@ -1,5 +1,6 @@
 require 'spec/rake/spectask'
 require 'escape'
+require 'environment'
 require 'resque/tasks'
 
 task :default => :test
@@ -17,13 +18,13 @@ end
 
 namespace :db do
   desc 'Auto-migrate the database (destroys data)'
-  task :migrate => :environment do
+  task :migrate do
     `rm -rf #{File.join(SiteConfig.files_path, "*")}`
     DataMapper.auto_migrate!
   end
 
   desc 'Auto-upgrade the database (preserves data)'
-  task :upgrade => :environment do
+  task :upgrade do
     DataMapper.auto_upgrade!
   end
 end
@@ -37,19 +38,19 @@ namespace :solr do
   end
 
   desc 'start solr server instance in the background'
-  task :start => :environment do
+  task :start do
     puts "** Starting Bakground Solr instance **"
     run_command('start')
   end
 
   desc 'start solr server instance in the foreground'
-  task :run => :environment do
+  task :run do
     puts "** Starting Foreground Solr instance **"
     run_command('run')
   end
 
   desc 'stop solr instance'
-  task :stop => :environment do
+  task :stop do
     puts "** Stopping Background Solr instance **"
     system(Escape.shell_command([File.join(SiteConfig.root_path, 'script', 'solr'), 'stop']))
   end
@@ -69,8 +70,4 @@ namespace :gems do
     # required_versioned_gems = [['activesupport','2.3.5']]
     # required_versioned_gems.each { |required_gem, version| system "gem install #{required_gem} -v #{version}" }
   end
-end
-
-task :environment do
-  require 'environment'
 end
