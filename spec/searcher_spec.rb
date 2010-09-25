@@ -15,9 +15,9 @@ describe Gnaclr::Searcher do
       :show_revisions => 'true',
       :search_term => 'something',
     }
-    @meta = Gnaclr::ClassificationMetadataSearcher.new
-    @sci = Gnaclr::ScientificNameSearcher.new
-    @vern = Gnaclr::VernacularNameSearcher.new
+    @meta = Gnaclr::ClassificationMetadataSearcher.new(@params)
+    @sci = Gnaclr::ScientificNameSearcher.new(@params)
+    @vern = Gnaclr::VernacularNameSearcher.new(@params)
     @meta_search = Gnaclr::Searcher.new(@meta)
     @sci_search = Gnaclr::Searcher.new(@sci)
     @vern_search = Gnaclr::Searcher.new(@vern)

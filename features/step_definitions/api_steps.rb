@@ -68,15 +68,15 @@ When /^I search for "([^"]*)" using API$/ do |search_term|
 end
 
 Then /^I find json data about this classification$/ do
-  res = Crack::JSON.parse @response[:json]
-  c = res['classifications'] ? res['classifications'][0] : res
-  search_fields = [c['title'], c['authors'].map {|a| a['last_name'] + ' ' + a['first_name']}, c['description']].flatten.join(' ')
+  res = JSON.parse(@response[:json], :symbolize_names => true)
+  c = res[:classification_metadata_search] ? res[:classification_metadata_search][:classifications][0] : res
+  search_fields = [c[:title], c[:authors].map {|a| a[:last_name] + ' ' + a[:first_name]}, c[:description]].flatten.join(' ')
   search_fields.match(/#{@search_term}/).should_not be_nil
 end
 
 Then /^I find xml data about this classification$/ do
   res = Crack::XML.parse(@response[:xml])
-  c = res['hash']['classifications'] ? res['hash']['classifications'][0] : res['hash']
+  c = res['hash']['classification_metadata_search'] ? res['hash']['classification_metadata_search']['classifications'][0] : res['hash']
   search_fields = [c['title'], c['authors'].map {|a| a['last_name'] + ' ' + a['first_name']}, c['description']].flatten.join(' ')
   search_fields.match(/#{@search_term}/).should_not be_nil 
 end
@@ -113,7 +113,7 @@ end
 
 Then /^I find no classifications$/ do
   res = Crack::XML.parse(@response[:xml])
-  res['hash']['classifications'].size == 0
+  res['hash']['classification_metadata_search']['classifications'].size == 0
 end
 
 When /^I query API for the classification with the UUID$/ do
@@ -133,12 +133,14 @@ When /^I search for "([^"]*)"$/ do |search_term|
   @response = {}
   search_term = URI.escape(search_term)
   ['xml', 'json'].each do |format|
-    visit("/search?search_term=#{search_term}=#{format}")
+    visit("/search?search_term=#{search_term}&format=#{format}")
     @response[format.to_sym] = body
   end
 end
 
-Then /^I get classification and path to this name$/ do
-  require 'ruby-debug'; debugger
-  puts ''
+Then /^I get classification and path to this name in "([^"]*)" as "([^"]*)"$/ do |search_type, name_type|
+  res = JSON.parse(@response[:json], :symbolize_names => true)[search_type.to_sym]
+  res[:classifications].size.should > 0
+  res[:classifications][0][:path].to_s.should_not == ""
+  res[:classifications][0][:found_as].should == name_type
 end
