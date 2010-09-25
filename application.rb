@@ -39,17 +39,16 @@ get '/' do
 end
 
 get '/classifications' do
-  page = params[:page] ? params[:page].to_i : 1
-  per_page = params[:per_page] ? params[:page].to_i : 30
-  @classifications = Classification.all(:order => :updated_at.desc, :limit => per_page, :offset => ((page - 1) * per_page))
+  @cms = Gnaclr::ClassificationMetadataSearcher.new(params)
+  @classifications = Classification.all(:order => :updated_at.desc, :limit => @cms.args[:per_page], :offset => ((@cms.args[:page] - 1) * @cms.args[:per_page]))
   @total_rows = Classification.count
-  format = params[:format] ? params[:format].strip : nil
-  if format && ['json','xml'].include?(format)
-    @prepared_data = prepare_data(@classifications, @total_rows, page, per_page, nil, true)
+  format = @cms.args[:format]
+  if format
+    @prepared_data = @cms.prepare_results(@classifications, @total_rows)
     if format == 'json'
       content_type :json
       data = @prepared_data.to_json
-      params[:callback] ? "#{params[:callback]}(#{data});" : data
+      @cms.args[:callback] ? "#{@cms.args[:callback]}(#{data});" : data
     else
       content_type :xml
       @prepared_data.to_xml(:dasherize => false)
@@ -81,27 +80,29 @@ get '/search' do
     content_type :json
     data = @search_result.to_json
     args[:callback] ? "#{args[:callback]}(#{data});" : data
-  elsif format == 'xml'
+  elsif args[:format] == 'xml'
     content_type :xml
     @search_result.to_xml(:dasherize => false)
   else
-    haml :search_result
+    haml :search_results
   end
 end
 
 get "/classification/:identifier" do
   identifier = params[:identifier]
+  params[:show_revisions] = 'true'
+  @cms = Gnaclr::ClassificationMetadataSearcher.new(params)
   @classification = UUID.valid?(identifier) ? Classification.first(:uuid => identifier) : Classification.first(:id => identifier.to_i)
   @repository = Gnaclr::Repository.get_repo(@classification.id)
   count = 0
   @commits = Gnaclr::Repository.get_commits(@repository, @classification)
-  format = params[:format] ? params[:format].strip : nil
-  if format && ['json','xml'].include?(format)
-    @prepared_data = prepare_classification(@classification, true)
+  format = @cms.args[:format]
+  if format 
+    @prepared_data = @cms.prepare_classification(@classification)
     if format == 'json'
       content_type :json
       data = @prepared_data.to_json
-      params[:callback] ? "#{params[:callback]}(#{data});" : data
+      @cms.args[:callback] ? "#{@cms.args[:callback]}(#{data});" : data
     else
       content_type :xml
       @prepared_data.to_xml(:dasherize => false)

@@ -1,11 +1,10 @@
 module Gnaclr
   class Searcher
-    attr_reader :args
 
     def self.search_all(params)
-      sci = Gnaclr::Searcher.new(ScientificNameSearcher.new, params)
-      vern = Gnaclr::Searcher.new(VernacularNameSearcher.new, params)
-      meta = Gnaclr::Searcher.new(ClassificationMetadataSearcher.new, params)
+      sci = Gnaclr::Searcher.new(ScientificNameSearcher.new(params))
+      vern = Gnaclr::Searcher.new(VernacularNameSearcher.new(params))
+      meta = Gnaclr::Searcher.new(ClassificationMetadataSearcher.new(params))
       sci_res = sci.search
       vern_res = vern.search
       meta_res = meta.search
@@ -16,6 +15,32 @@ module Gnaclr
       Raise "Not a searcher" unless engine.is_a? SearcherAbstract
       @engine = engine
       self.args = params if params
+    end
+   
+    def args=(params)
+      @engine.args=(params)
+    end
+
+    def args
+      @engine.args
+    end
+
+    def search
+      @engine.search
+    end
+    
+    def search_raw
+      @engine.search_raw
+    end
+
+  end
+
+  class SearcherAbstract
+    attr_reader :args
+    
+    def initialize(params = {})
+      self.args = params
+      @solr_client = SolrClient.new
     end
     
     def args=(params)
@@ -34,25 +59,6 @@ module Gnaclr
         :show_revisions => show_revisions,
         :callback => callback
       }
-      @engine.args = @args.dup
-    end
-
-    def search
-      @engine.search
-    end
-    
-    def search_raw
-      @engine.search_raw
-    end
-
-  end
-
-  class SearcherAbstract
-    attr_writer :args
-
-    def initialize
-      @args = nil
-      @solr_client = SolrClient.new
     end
 
     def search
@@ -140,7 +146,7 @@ module Gnaclr
     def prepare_classification(classification)
       c = Classification.first(:id => classification[:classification_id][0])
       res = classification_hash(c)
-      found_as = (@args[:search_term].strip == classification[:current_scientific_name_exact]) ? 'current_name' : 'synonym'
+      found_as = (@args[:search_term].strip == classification[:current_scientific_name_exact][0].strip) ? 'current_name' : 'synonym'
       res.merge!({
         :rank => classification[:rank][0], 
         :path => classification[:path][0],
@@ -165,12 +171,14 @@ module Gnaclr
     def prepare_classification(classification)
       c = Classification.first(:id => classification[:classification_id][0])
       res = classification_hash(c)
+      found_as = "vernacular_name"
       res.merge!({
         :rank => classification[:rank][0], 
         :path => classification[:path][0],
         :vernacular_names => classification[:common_name],
         :current_name => classification[:current_scientific_name][0],
-        :synonyms => classification[:current_name_synonym]
+        :synonyms => classification[:current_name_synonym],
+        :found_as => found_as
       })
     end
   end
