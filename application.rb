@@ -113,7 +113,7 @@ get "/classification/:identifier" do
 end
 
 get "/classification_file/:classification_id/:tree_id" do
-  @repository = get_repo(params[:classification_id])
+  @repository = Gnaclr::Repository.get_repo(params[:classification_id])
   blob = @repository.tree(params[:tree_id]).blobs.first
   type, size, file_name = [blob.mime_type, blob.size, blob.name]
   headers(
