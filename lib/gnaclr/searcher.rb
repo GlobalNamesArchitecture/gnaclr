@@ -90,7 +90,7 @@ module Gnaclr
     def classification_hash(classification)
       c = classification
       authors = c.authors.sort_by {|a| a.last_name.downcase}.map { |a| {:first_name => a.first_name, :last_name => a.last_name, :email => a.email} }
-      file_url = "/files/#{c.uuid}/#{c.file_name}"
+      file_url = "#{SiteConfig.url_base}/files/#{c.uuid}/#{c.file_name}"
       res = {
         :id => c.id, :uuid => c.uuid, :file_url => file_url,
         :title => c.title, :description => c.description,
@@ -146,13 +146,13 @@ module Gnaclr
     def prepare_classification(classification)
       c = Classification.first(:id => classification[:classification_id][0])
       res = classification_hash(c)
-      found_as = (@args[:search_term].strip == classification[:current_scientific_name_exact][0].strip) ? 'current_name' : 'synonym'
+      found_as = (@args[:search_term].strip.downcase == classification[:current_scientific_name_exact][0].strip.downcase) ? 'current_name' : 'synonym'
       res.merge!({
         :rank => classification[:rank][0], 
         :path => classification[:path][0],
         :vernacular_names => classification[:common_name],
         :current_name => classification[:current_scientific_name][0],
-        :synonyms => classification[:current_name_synonym],
+        :synonyms => classification[:scientific_name_synonym],
         :found_as => found_as
       })
     end

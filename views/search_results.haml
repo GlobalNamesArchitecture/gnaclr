@@ -1,3 +1,7 @@
-%h2 @search_results[:search_term]search_term
+%h2 
+  Search_term: 
+  %em== '#{@search_result[:search_term]}'
 - [:scientific_name_search, :vernacular_name_search, :classification_metadata_search].each do |res|
-  %p something
+  - title = res.to_s.split('_').map { |w| w.capitalize }.join(' ')
+  %h3= title
+  %h4== Found: #{@search_result[res][:total_count]}
