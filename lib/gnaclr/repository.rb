@@ -16,7 +16,7 @@ module Gnaclr
           :id => c.id, 
           :tree_id => c.tree.id,
           :file_name => c.tree.blobs.first.name, 
-          :url_path => "#{SiteConfig.url_base}/classification_file/#{classification.id}/#{c.tree.id}" 
+          :url => "#{SiteConfig.url_base}/classification_file/#{classification.id}/#{c.tree.id}" 
         }
       end
     end
