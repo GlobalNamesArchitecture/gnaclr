@@ -144,3 +144,16 @@ Then /^I get classification and path to this name in "([^"]*)" as "([^"]*)"$/ do
   res[:classifications][0][:path].to_s.should_not == ""
   res[:classifications][0][:found_as].should == name_type
 end
+
+When /^I access API for the list of classifications$/ do
+  @response = {}
+  ['xml', 'json'].each do |format|
+    visit("/classifications?format=#{format}")
+    @response[format.to_sym] = body
+  end
+end
+
+Then /^results will have revision information$/ do
+  res = JSON.parse(@response[:json], :symbolize_names => true)
+  res[:classifications][0][:revisions].should_not be_nil
+end

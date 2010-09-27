@@ -39,6 +39,7 @@ get '/' do
 end
 
 get '/classifications' do
+  params.merge!({:show_revisions => 'true'})
   @cms = Gnaclr::ClassificationMetadataSearcher.new(params)
   @classifications = Classification.all(:order => :updated_at.desc, :limit => @cms.args[:per_page], :offset => ((@cms.args[:page] - 1) * @cms.args[:per_page]))
   @total_rows = Classification.count

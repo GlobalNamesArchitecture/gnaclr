@@ -25,6 +25,12 @@ Feature: API for posting classification to Gnaclr and reading information about 
     And a "not_dwca.tar.gz" local file
     When I upload the file through the API
     Then the file should be rejected
+  
+  Scenario: API to show classifications
+    Given UUID "11111111-1111-1111-1111-111111111111"
+    And a classification with the UUID
+    When I access API for the list of classifications
+    And results will have revision information
 
   Scenario: Searching API by a metadata words
     Given UUID "11111111-1111-1111-1111-111111111111"
