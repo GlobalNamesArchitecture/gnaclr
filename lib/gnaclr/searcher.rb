@@ -147,11 +147,14 @@ module Gnaclr
       c = Classification.first(:id => classification[:classification_id][0])
       res = classification_hash(c)
       found_as = (@args[:search_term].strip.downcase == classification[:current_scientific_name_exact][0].strip.downcase) ? 'current_name' : 'synonym'
+      rank = classification[:rank].is_a?(Array) ? classification[:rank][0] : nil
+      path = classification[:path].is_a?(Array) ? classification[:path][0] : nil
+      current_name = classification[:current_scientific_name].is_a?(Array) ? classification[:current_scientific_name][0] : nil
       res.merge!({
-        :rank => classification[:rank][0], 
-        :path => classification[:path][0],
+        :rank => rank, 
+        :path => path,
         :vernacular_names => classification[:common_name],
-        :current_name => classification[:current_scientific_name][0],
+        :current_name => current_name,
         :synonyms => classification[:scientific_name_synonym],
         :found_as => found_as
       })
