@@ -1,11 +1,12 @@
+# require 'spec/interop/test'
+require 'bundler/setup'
+require 'crack'
+require 'rack/test'
+require 'redis'
+require 'rspec'
+require 'ruby-debug'
 require 'rubygems'
 require 'sinatra'
-require 'spec'
-require 'spec/interop/test'
-require 'rack/test'
-require 'crack'
-require 'redis'
-require 'ruby-debug'
 
 # set test environment
 Sinatra::Base.set :environment, :test
@@ -16,7 +17,7 @@ Sinatra::Base.set :logging, false
 require 'application'
 $redis = Redis.new
 
-Spec::Runner.configure do |config|
+RSpec.configure do |config|
 
   unless defined? CONSTANTS_DEFINED
     UUID1 = UUID.create_v5("one.example.com", UUID::NameSpace_DNS).guid

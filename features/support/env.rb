@@ -12,8 +12,8 @@ class GnaclrWorld
 
   include Capybara
   include Rack::Test::Methods
-  include Spec::Expectations
-  include Spec::Matchers
+  include RSpec::Expectations
+  include RSpec::Matchers
 end
 
 World do

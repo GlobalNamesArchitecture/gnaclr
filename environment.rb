@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'rubygems'
 require 'dm-core'
 require 'dm-timestamps'
@@ -18,6 +19,12 @@ require 'digest/sha1'
 require 'json'
 
 require 'sinatra' unless defined?(Sinatra)
+
+environment = ENV["RACK_ENV"] || ENV["RAILS_ENV"]
+environment = (environment && ["production", "test", "development"].include?(environment.downcase)) ? environment.downcase.to_sym : :development
+
+Sinatra::Base.environment = environment
+
 
 root_path = File.expand_path(File.dirname(__FILE__))
 conf = YAML.load(open(File.join(root_path, 'config.yml')).read)[Sinatra::Base.environment.to_s]
