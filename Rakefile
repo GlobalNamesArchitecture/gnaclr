@@ -19,7 +19,11 @@ else
 end
 
 namespace :resque do
-  task :stop_workers => :environment do
+  task :setup => :environment do
+    puts 'Setting Environment'
+  end
+
+  task :stop_workers => :setup do
     desc "Finds and quits all running workers"
     puts "Quitting resque workers"
     pids = Array.new
