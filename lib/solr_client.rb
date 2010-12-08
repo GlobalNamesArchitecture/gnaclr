@@ -3,12 +3,17 @@ require 'rest_client'
 require 'nokogiri'
 require 'uri'
 
+unless defined? SOLR_CLIENT_DEFINED
+  SOLR_URL = SiteConfig ? SiteConfig.solr_url : "http://localhost:8983/solr"
+  SOLR_CLIENT_DEFINED = true
+end
+
 class SolrClient
   
   attr_reader :url
   
 
-  def initialize(solr_url = "http://localhost:8983/solr")
+  def initialize(solr_url = SOLR_URL)
     @url = solr_url
     @url_update = @url + "/update"
     @url_update_csv = @url + "/update/csv?wt=json&f.common_name.split=true&f.scientific_name_synonym_exact.split=true&f.scientific_name_synonym.split=true&stream.contentType=text/plain;charset=utf-8&stream.file=%s&commit=%s"
