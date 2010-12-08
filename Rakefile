@@ -2,6 +2,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'rspec/core/rake_task'
 require 'escape'
+require 'resque'
 require 'resque/tasks'
 
 task :default => :test
@@ -14,6 +15,22 @@ else
   RSpec::Core::RakeTask.new(:spec) do |t|
     t.pattern = 'spec/**/*.rb'
     t.rspec_opts = ['-cfs']
+  end
+end
+
+namespace :resque do
+  task :stop_workers => :environment do
+    desc "Finds and quits all running workers"
+    puts "Quitting resque workers"
+    pids = Array.new
+    Resque.workers.each do |worker|
+      pids.concat(worker.worker_pids)
+    end
+    unless pids.empty? 
+      system("kill -QUIT #{pids.join(' ')}")
+      god_pid = "/var/run/god/resque-1.10.0.pid" 
+      FileUtils.rm god_pid if File.exists? god_pid
+    end
   end
 end
 
