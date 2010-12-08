@@ -5,7 +5,7 @@ module Gnaclr
 
   unless defined? GNACLR_DEFINED
     TEMP_DIR = "/tmp"
-    SOLR_URL = "http://localhost:8983/solr"
+    SOLR_URL = SiteConfig ? SiteConfig.solr_url : "http://localhost:8983/solr"
     ROWS_PER_FILE = 10_000
     GNACLR_DEFINED = true
   end
