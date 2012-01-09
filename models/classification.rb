@@ -17,4 +17,12 @@ class Classification
   def file_path
     File.join(SiteConfig.files_path, uuid, file_name) 
   end
+
+
+  def format_description
+    #HACK: remove me
+    res = CGI.unescapeHTML(self.description)
+    res = res.gsub(/^\s*para/, '').gsub(/\<[^\>]{1,8}\>/, ' ').strip.gsub(/\s+/, " ")
+    self.description = res
+  end
 end
