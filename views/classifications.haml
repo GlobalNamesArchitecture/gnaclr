@@ -13,7 +13,7 @@
     %tr
       %td
         %a{ :href => classificaton_file(c) }= c.title
-      %td= c.authors.sort_by {|a| a.last_name.downcase}.map {|a| a.first_name + " " + a.last_name}.join(", ")
+      %td.authors= c.authors.sort_by {|a| a.last_name.downcase}.map {|a| a.first_name + " " + a.last_name}.join(", ")
       %td.desc= c.description
       %td= c.updated_at.strftime('%Y-%m-%d %H:%M:%S')
       %td
