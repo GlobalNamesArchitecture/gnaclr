@@ -9,14 +9,18 @@
     %th Description
     %th Updated
     %th Details
+  - count = 0
+  - is_last = nil
   - @classifications.each do |c|
+    - count += 1
+    - is_last = "last" if count == @classifications.size
     %tr
-      %td
+      %td{ :class => is_last }
         %a{ :href => classificaton_file(c) }= c.title
-      %td.authors= c.authors.sort_by {|a| a.last_name.downcase}.map {|a| a.first_name + " " + a.last_name}.join(", ")
-      %td.desc= c.description
-      %td= c.updated_at.strftime('%Y-%m-%d %H:%M:%S')
-      %td
+      %td.authors{ :class => is_last }= c.authors.sort_by {|a| a.last_name.downcase}.map {|a| a.first_name + " " + a.last_name}.join(", ")
+      %td.desc{ :class => is_last }= c.description
+      %td{ :class => is_last }= c.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+      %td{ :class => is_last }
         %a{ :href => "/classification/#{c.id}" }
           all revisions 
   
